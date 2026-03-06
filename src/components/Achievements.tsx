@@ -1,46 +1,48 @@
-import React from 'react';
 import { Users, Award, BookOpen, Zap } from 'lucide-react';
-
-const achievements = [
-  {
-    icon: Users,
-    number: '500+',
-    title: 'Students',
-    description: 'Active learners pursuing excellence',
-  },
-  {
-    icon: Award,
-    number: '30+',
-    title: 'Expert Teachers',
-    description: 'Highly qualified and dedicated educators',
-  },
-  {
-    icon: BookOpen,
-    number: '15+',
-    title: 'Advanced Labs',
-    description: 'Modern facilities for practical learning',
-  },
-  {
-    icon: Zap,
-    number: '95%',
-    title: 'Pass Rate',
-    description: 'Exceptional academic achievement',
-  },
-];
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Achievements() {
+  const { t } = useLanguage();
+
+  const achievements = [
+    {
+      icon: Users,
+      number: '500+',
+      title: t('students'),
+      description: t('studentsDesc'),
+    },
+    {
+      icon: Award,
+      number: '30+',
+      title: t('expertTeachers'),
+      description: t('expertTeachersDesc'),
+    },
+    {
+      icon: BookOpen,
+      number: '15+',
+      title: t('advancedLabs'),
+      description: t('advancedLabsDesc'),
+    },
+    {
+      icon: Zap,
+      number: '95%',
+      title: t('passRate'),
+      description: t('passRateDesc'),
+    },
+  ];
+
   return (
     <section className="py-20 bg-gray-50">
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Why Choose Ar-Roshidoniy?
+            {t('whyChoose')}
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            We pride ourselves on delivering world-class education with state-of-the-art facilities and exceptional educators.
+            {t('whyChooseDesc')}
           </p>
           <p className="text-sm text-gray-500 mt-4 italic">
-            Achievement details can be customized later
+            {t('achievementNote')}
           </p>
         </div>
 

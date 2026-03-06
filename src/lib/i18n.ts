@@ -1,0 +1,305 @@
+export type Language = 'en' | 'uz' | 'ru';
+
+export const translations = {
+  en: {
+    // Header
+    login: 'Login',
+
+    // Hero
+    heroTitle: 'Ar-Roshidoniy',
+    heroSubtitle: 'Excellence in Education for High School Students',
+    applyNow: 'Apply Now',
+
+    // Achievements
+    whyChoose: 'Why Choose Ar-Roshidoniy?',
+    whyChooseDesc: 'We pride ourselves on delivering world-class education with state-of-the-art facilities and exceptional educators.',
+    achievementNote: 'Achievement details can be customized later',
+    students: 'Students',
+    studentsDesc: 'Active learners pursuing excellence',
+    expertTeachers: 'Expert Teachers',
+    expertTeachersDesc: 'Highly qualified and dedicated educators',
+    advancedLabs: 'Advanced Labs',
+    advancedLabsDesc: 'Modern facilities for practical learning',
+    passRate: 'Pass Rate',
+    passRateDesc: 'Exceptional academic achievement',
+
+    // Subjects
+    ourCurriculum: 'Our Curriculum',
+    curriculumDesc: 'Comprehensive subjects designed to prepare students for higher education and professional success',
+    subjectMath: 'Mathematics',
+    subjectMathDesc: 'Algebra, Geometry, Calculus, and Statistics',
+    subjectPhysics: 'Physics',
+    subjectPhysicsDesc: 'Mechanics, Electricity, Waves, and Modern Physics',
+    subjectChemistry: 'Chemistry',
+    subjectChemistryDesc: 'Organic, Inorganic, and Physical Chemistry',
+    subjectBiology: 'Biology',
+    subjectBiologyDesc: 'Cell Biology, Genetics, Ecology, and Physiology',
+    subjectHistory: 'History & Social Studies',
+    subjectHistoryDesc: 'World History, Geography, and Civic Education',
+    subjectLanguages: 'Languages',
+    subjectLanguagesDesc: 'English, Arabic, and Additional Language Options',
+    subjectArts: 'Arts & Design',
+    subjectArtsDesc: 'Visual Arts, Digital Design, and Creative Expression',
+    subjectPE: 'Physical Education',
+    subjectPEDesc: 'Sports, Fitness, and Wellness Programs',
+    subjectCS: 'Computer Science',
+    subjectCSDesc: 'Programming, Web Development, and IT Skills',
+
+    // Application Form
+    applicationFormTitle: 'Application Form',
+    applicationFormDesc: 'Join us and start your journey to excellence',
+    applicationSuccess: 'Application submitted successfully! We will contact you soon.',
+    applicationError: 'Failed to submit application. Please try again.',
+    studentFullName: 'Student Full Name *',
+    studentNamePlaceholder: "Enter student's full name",
+    parentName: 'Parent/Guardian Name *',
+    parentNamePlaceholder: "Enter parent/guardian's name",
+    emailAddress: 'Email Address *',
+    emailPlaceholder: 'Enter email address',
+    phoneNumber: 'Phone Number *',
+    phonePlaceholder: 'Enter phone number',
+    gradeLevel: 'Grade Level *',
+    additionalMessage: 'Additional Message (Optional)',
+    messagePlaceholder: 'Tell us about your academic interests or achievements',
+    submitApplication: 'Submit Application',
+    submitting: 'Submitting...',
+
+    // Footer
+    footerDesc: 'Providing excellence in education for high school students since its establishment.',
+    contact: 'Contact',
+    location: 'Location',
+    workingHours: 'Working Hours',
+    weekdays: 'Monday - Friday',
+    hours: '8:00 AM - 4:00 PM',
+    copyright: '© 2024 Ar-Roshidoniy High School. All rights reserved.',
+
+    // Login Page
+    welcomeBack: 'Welcome Back',
+    portalAccess: 'Ar-Roshidoniy Portal Access',
+    studentTab: 'Student',
+    adminTab: 'Administration',
+    studentEmail: 'Student Email',
+    adminEmail: 'Admin Email',
+    studentEmailPlaceholder: 'Enter your student email',
+    adminEmailPlaceholder: 'Enter your admin email',
+    password: 'Password',
+    passwordPlaceholder: 'Enter password',
+    logIn: 'Log In',
+    loggingIn: 'Logging In...',
+    wrongCredentials: 'Wrong credentials. Please check your email and password.',
+    backToHome: 'Back to Home',
+    notAStudent: 'Not a student yet?',
+
+    // Dashboards
+    adminDashboardTitle: 'Admin Dashboard',
+    adminDashboardDesc: 'You are successfully logged in!',
+    studentDashboardTitle: 'Student Dashboard',
+    studentDashboardDesc: 'Welcome to your student portal!',
+    logOut: 'Log Out',
+
+    // Protected Route
+    verifyingAccess: 'Verifying access...',
+  },
+
+  uz: {
+    // Header
+    login: 'Kirish',
+
+    // Hero
+    heroTitle: 'Ar-Roshidoniy',
+    heroSubtitle: 'O\'rta maktab o\'quvchilari uchun mukammal ta\'lim',
+    applyNow: 'Ariza Topshirish',
+
+    // Achievements
+    whyChoose: 'Nima uchun Ar-Roshidoniy?',
+    whyChooseDesc: 'Biz zamonaviy inshootlar va ajoyib o\'qituvchilar bilan jahon darajasidagi ta\'limni taqdim etamiz.',
+    achievementNote: 'Yutuq tafsilotlarini keyinroq o\'zgartirish mumkin',
+    students: 'O\'quvchilar',
+    studentsDesc: 'Mukammallikka intilayotgan faol o\'quvchilar',
+    expertTeachers: 'Mutaxassis o\'qituvchilar',
+    expertTeachersDesc: 'Yuqori malakali va fidoyi pedagog jamoasi',
+    advancedLabs: 'Zamonaviy Laboratoriyalar',
+    advancedLabsDesc: 'Amaliy o\'rganish uchun zamonaviy inshootlar',
+    passRate: 'O\'tish Foizi',
+    passRateDesc: 'Yuqori akademik ko\'rsatkichlar',
+
+    // Subjects
+    ourCurriculum: 'Bizning O\'quv Dasturimiz',
+    curriculumDesc: 'O\'quvchilarni oliy ta\'lim va kasbiy muvaffaqiyatga tayyorlash uchun mo\'ljallangan fanlar',
+    subjectMath: 'Matematika',
+    subjectMathDesc: 'Algebra, Geometriya, Kalkulyatsiya va Statistika',
+    subjectPhysics: 'Fizika',
+    subjectPhysicsDesc: 'Mexanika, Elektr, To\'lqinlar va Zamonaviy Fizika',
+    subjectChemistry: 'Kimyo',
+    subjectChemistryDesc: 'Organik, Anorganik va Fizik Kimyo',
+    subjectBiology: 'Biologiya',
+    subjectBiologyDesc: 'Hujayra Biologiyasi, Genetika, Ekologiya va Fiziologiya',
+    subjectHistory: 'Tarix va Ijtimoiy Fanlar',
+    subjectHistoryDesc: 'Jahon Tarixi, Geografiya va Fuqarolik Ta\'limi',
+    subjectLanguages: 'Tillar',
+    subjectLanguagesDesc: 'Ingliz, Arab va Qo\'shimcha Til Imkoniyatlari',
+    subjectArts: 'San\'at va Dizayn',
+    subjectArtsDesc: 'Tasviriy San\'at, Raqamli Dizayn va Ijodiy Ifoda',
+    subjectPE: 'Jismoniy Tarbiya',
+    subjectPEDesc: 'Sport, Jismoniy Mashq va Sog\'liqni Saqlash Dasturlari',
+    subjectCS: 'Informatika',
+    subjectCSDesc: 'Dasturlash, Veb Ishlab Chiqish va IT Ko\'nikmalari',
+
+    // Application Form
+    applicationFormTitle: 'Ariza Shakli',
+    applicationFormDesc: 'Bizga qo\'shiling va mukammallikka safaringizni boshlang',
+    applicationSuccess: 'Ariza muvaffaqiyatli yuborildi! Tez orada siz bilan bog\'lanamiz.',
+    applicationError: 'Ariza yuborishda xato yuz berdi. Qayta urinib ko\'ring.',
+    studentFullName: 'O\'quvchining To\'liq Ismi *',
+    studentNamePlaceholder: "O'quvchining to'liq ismini kiriting",
+    parentName: 'Ota-ona / Vasiy Ismi *',
+    parentNamePlaceholder: "Ota-ona/vasiy ismini kiriting",
+    emailAddress: 'Elektron Pochta *',
+    emailPlaceholder: 'Elektron pochta manzilini kiriting',
+    phoneNumber: 'Telefon Raqami *',
+    phonePlaceholder: 'Telefon raqamini kiriting',
+    gradeLevel: 'Sinf Darajasi *',
+    additionalMessage: 'Qo\'shimcha Xabar (Ixtiyoriy)',
+    messagePlaceholder: 'Akademik qiziqishlaringiz yoki yutuqlaringiz haqida yozing',
+    submitApplication: 'Ariza Yuborish',
+    submitting: 'Yuborilmoqda...',
+
+    // Footer
+    footerDesc: 'Tashkil etilganidan beri o\'rta maktab o\'quvchilari uchun mukammal ta\'lim.',
+    contact: 'Aloqa',
+    location: 'Manzil',
+    workingHours: 'Ish Vaqti',
+    weekdays: 'Dushanba - Juma',
+    hours: '8:00 - 16:00',
+    copyright: '© 2024 Ar-Roshidoniy O\'rta Maktabi. Barcha huquqlar himoyalangan.',
+
+    // Login Page
+    welcomeBack: 'Xush Kelibsiz',
+    portalAccess: 'Ar-Roshidoniy Portali',
+    studentTab: 'O\'quvchi',
+    adminTab: 'Ma\'muriyat',
+    studentEmail: 'O\'quvchi Emaili',
+    adminEmail: 'Admin Emaili',
+    studentEmailPlaceholder: 'O\'quvchi emailingizni kiriting',
+    adminEmailPlaceholder: 'Admin emailingizni kiriting',
+    password: 'Parol',
+    passwordPlaceholder: 'Parolni kiriting',
+    logIn: 'Kirish',
+    loggingIn: 'Kirilmoqda...',
+    wrongCredentials: 'Noto\'g\'ri ma\'lumotlar. Email va parolni tekshiring.',
+    backToHome: 'Bosh sahifaga qaytish',
+    notAStudent: 'Hali o\'quvchi emassizmi?',
+
+    // Dashboards
+    adminDashboardTitle: 'Admin Boshqaruv Paneli',
+    adminDashboardDesc: 'Muvaffaqiyatli kirdingiz!',
+    studentDashboardTitle: 'O\'quvchi Kabineti',
+    studentDashboardDesc: 'O\'quvchi portalingizga xush kelibsiz!',
+    logOut: 'Chiqish',
+
+    // Protected Route
+    verifyingAccess: 'Kirish tekshirilmoqda...',
+  },
+
+  ru: {
+    // Header
+    login: 'Войти',
+
+    // Hero
+    heroTitle: 'Ar-Roshidoniy',
+    heroSubtitle: 'Превосходное образование для учеников старшей школы',
+    applyNow: 'Подать Заявку',
+
+    // Achievements
+    whyChoose: 'Почему Ar-Roshidoniy?',
+    whyChooseDesc: 'Мы гордимся предоставлением образования мирового класса с современными объектами и выдающимися педагогами.',
+    achievementNote: 'Детали достижений можно настроить позже',
+    students: 'Студентов',
+    studentsDesc: 'Активные учащиеся, стремящиеся к совершенству',
+    expertTeachers: 'Опытных Учителей',
+    expertTeachersDesc: 'Высококвалифицированные и преданные педагоги',
+    advancedLabs: 'Лабораторий',
+    advancedLabsDesc: 'Современные объекты для практического обучения',
+    passRate: 'Успеваемость',
+    passRateDesc: 'Исключительные академические достижения',
+
+    // Subjects
+    ourCurriculum: 'Наша Учебная Программа',
+    curriculumDesc: 'Комплексные предметы, разработанные для подготовки учащихся к высшему образованию и профессиональному успеху',
+    subjectMath: 'Математика',
+    subjectMathDesc: 'Алгебра, Геометрия, Математический анализ и Статистика',
+    subjectPhysics: 'Физика',
+    subjectPhysicsDesc: 'Механика, Электричество, Волны и Современная физика',
+    subjectChemistry: 'Химия',
+    subjectChemistryDesc: 'Органическая, Неорганическая и Физическая химия',
+    subjectBiology: 'Биология',
+    subjectBiologyDesc: 'Клеточная биология, Генетика, Экология и Физиология',
+    subjectHistory: 'История и Общественные науки',
+    subjectHistoryDesc: 'Всемирная история, География и Гражданское образование',
+    subjectLanguages: 'Языки',
+    subjectLanguagesDesc: 'Английский, Арабский и дополнительные языки',
+    subjectArts: 'Искусство и Дизайн',
+    subjectArtsDesc: 'Изобразительное искусство, Цифровой дизайн и Творческое выражение',
+    subjectPE: 'Физическая Культура',
+    subjectPEDesc: 'Спорт, Фитнес и Программы здоровья',
+    subjectCS: 'Информатика',
+    subjectCSDesc: 'Программирование, Веб-разработка и ИТ-навыки',
+
+    // Application Form
+    applicationFormTitle: 'Форма Заявки',
+    applicationFormDesc: 'Присоединяйтесь к нам и начните свой путь к совершенству',
+    applicationSuccess: 'Заявка успешно отправлена! Мы скоро свяжемся с вами.',
+    applicationError: 'Не удалось отправить заявку. Попробуйте снова.',
+    studentFullName: 'Полное Имя Ученика *',
+    studentNamePlaceholder: 'Введите полное имя ученика',
+    parentName: 'Имя Родителя / Опекуна *',
+    parentNamePlaceholder: 'Введите имя родителя/опекуна',
+    emailAddress: 'Электронная Почта *',
+    emailPlaceholder: 'Введите адрес электронной почты',
+    phoneNumber: 'Номер Телефона *',
+    phonePlaceholder: 'Введите номер телефона',
+    gradeLevel: 'Уровень Класса *',
+    additionalMessage: 'Дополнительное Сообщение (Необязательно)',
+    messagePlaceholder: 'Расскажите об академических интересах или достижениях',
+    submitApplication: 'Отправить Заявку',
+    submitting: 'Отправка...',
+
+    // Footer
+    footerDesc: 'Обеспечиваем превосходное образование для учеников старшей школы с момента основания.',
+    contact: 'Контакты',
+    location: 'Адрес',
+    workingHours: 'Рабочие Часы',
+    weekdays: 'Понедельник - Пятница',
+    hours: '8:00 - 16:00',
+    copyright: '© 2024 Ar-Roshidoniy. Все права защищены.',
+
+    // Login Page
+    welcomeBack: 'Добро Пожаловать',
+    portalAccess: 'Портал Ar-Roshidoniy',
+    studentTab: 'Ученик',
+    adminTab: 'Администрация',
+    studentEmail: 'Email Ученика',
+    adminEmail: 'Email Администратора',
+    studentEmailPlaceholder: 'Введите email ученика',
+    adminEmailPlaceholder: 'Введите email администратора',
+    password: 'Пароль',
+    passwordPlaceholder: 'Введите пароль',
+    logIn: 'Войти',
+    loggingIn: 'Вход...',
+    wrongCredentials: 'Неверные данные. Проверьте email и пароль.',
+    backToHome: 'На главную',
+    notAStudent: 'Ещё не ученик?',
+
+    // Dashboards
+    adminDashboardTitle: 'Панель Администратора',
+    adminDashboardDesc: 'Вы успешно вошли в систему!',
+    studentDashboardTitle: 'Личный Кабинет Ученика',
+    studentDashboardDesc: 'Добро пожаловать в ваш портал ученика!',
+    logOut: 'Выйти',
+
+    // Protected Route
+    verifyingAccess: 'Проверка доступа...',
+  },
+} as const;
+
+export type TranslationKey = keyof typeof translations.en;

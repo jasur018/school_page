@@ -1,73 +1,38 @@
-import React from 'react';
 import {
   BookOpen,
   Calculator,
   Microscope,
   Globe,
   Palette,
-  Music,
   Cpu,
   Activity,
 } from 'lucide-react';
-
-const subjects = [
-  {
-    icon: Calculator,
-    name: 'Mathematics',
-    description: 'Algebra, Geometry, Calculus, and Statistics',
-  },
-  {
-    icon: Microscope,
-    name: 'Physics',
-    description: 'Mechanics, Electricity, Waves, and Modern Physics',
-  },
-  {
-    icon: Microscope,
-    name: 'Chemistry',
-    description: 'Organic, Inorganic, and Physical Chemistry',
-  },
-  {
-    icon: BookOpen,
-    name: 'Biology',
-    description: 'Cell Biology, Genetics, Ecology, and Physiology',
-  },
-  {
-    icon: Globe,
-    name: 'History & Social Studies',
-    description: 'World History, Geography, and Civic Education',
-  },
-  {
-    icon: BookOpen,
-    name: 'Languages',
-    description: 'English, Arabic, and Additional Language Options',
-  },
-  {
-    icon: Palette,
-    name: 'Arts & Design',
-    description: 'Visual Arts, Digital Design, and Creative Expression',
-  },
-  {
-    icon: Activity,
-    name: 'Physical Education',
-    description: 'Sports, Fitness, and Wellness Programs',
-  },
-  {
-    icon: Cpu,
-    name: 'Computer Science',
-    description: 'Programming, Web Development, and IT Skills',
-  },
-];
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Subjects() {
+  const { t } = useLanguage();
+
+  const subjects = [
+    { icon: Calculator, name: t('subjectMath'), description: t('subjectMathDesc') },
+    { icon: Microscope, name: t('subjectPhysics'), description: t('subjectPhysicsDesc') },
+    { icon: Microscope, name: t('subjectChemistry'), description: t('subjectChemistryDesc') },
+    { icon: BookOpen, name: t('subjectBiology'), description: t('subjectBiologyDesc') },
+    { icon: Globe, name: t('subjectHistory'), description: t('subjectHistoryDesc') },
+    { icon: BookOpen, name: t('subjectLanguages'), description: t('subjectLanguagesDesc') },
+    { icon: Palette, name: t('subjectArts'), description: t('subjectArtsDesc') },
+    { icon: Activity, name: t('subjectPE'), description: t('subjectPEDesc') },
+    { icon: Cpu, name: t('subjectCS'), description: t('subjectCSDesc') },
+  ];
+
   return (
     <section className="py-20 bg-white">
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Our Curriculum
+            {t('ourCurriculum')}
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Comprehensive subjects designed to prepare students for higher education and professional success
+            {t('curriculumDesc')}
           </p>
         </div>
 

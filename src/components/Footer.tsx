@@ -1,7 +1,9 @@
-import React from 'react';
 import { MapPin, Phone, Mail, Clock } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Footer() {
+  const { t } = useLanguage();
+
   return (
     <footer className="bg-gray-900 text-gray-100 py-16">
       <div className="max-w-6xl mx-auto px-6">
@@ -9,12 +11,12 @@ export default function Footer() {
           <div>
             <h3 className="text-2xl font-bold text-white mb-4">Ar-Roshidoniy</h3>
             <p className="text-gray-400">
-              Providing excellence in education for high school students since its establishment.
+              {t('footerDesc')}
             </p>
           </div>
 
           <div>
-            <h4 className="text-lg font-semibold text-white mb-6">Contact</h4>
+            <h4 className="text-lg font-semibold text-white mb-6">{t('contact')}</h4>
             <div className="space-y-4">
               <a
                 href="tel:+1555123456"
@@ -34,7 +36,7 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="text-lg font-semibold text-white mb-6">Location</h4>
+            <h4 className="text-lg font-semibold text-white mb-6">{t('location')}</h4>
             <div className="flex items-start gap-3 text-gray-400">
               <MapPin className="w-5 h-5 flex-shrink-0 mt-1" />
               <div>
@@ -45,12 +47,12 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="text-lg font-semibold text-white mb-6">Working Hours</h4>
+            <h4 className="text-lg font-semibold text-white mb-6">{t('workingHours')}</h4>
             <div className="flex items-start gap-3 text-gray-400">
               <Clock className="w-5 h-5 flex-shrink-0 mt-1" />
               <div>
-                <p>Monday - Friday</p>
-                <p>8:00 AM - 4:00 PM</p>
+                <p>{t('weekdays')}</p>
+                <p>{t('hours')}</p>
               </div>
             </div>
           </div>
@@ -58,7 +60,7 @@ export default function Footer() {
 
         <div className="border-t border-gray-800 pt-8">
           <div className="text-center text-gray-500">
-            <p>&copy; 2024 Ar-Roshidoniy High School. All rights reserved.</p>
+            <p>{t('copyright')}</p>
           </div>
         </div>
       </div>
