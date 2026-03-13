@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
 import AdminTimetable from '../components/AdminTimetable';
+import AdminApplications from '../components/AdminApplications';
+import AdminStudents from '../components/AdminStudents';
+import AdminGroups from '../components/AdminGroups';
+import AdminAssessments from '../components/AdminAssessments';
+import AdminMessages from '../components/AdminMessages';
 import { 
   LogOut, 
   Bell, 
@@ -9,11 +14,12 @@ import {
   Users, 
   Send,
   MessageSquare,
-  Menu
+  Menu,
+  Plus
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-type TabType = 'timetable' | 'applications' | 'students' | 'publish_assessments' | 'message';
+type TabType = 'timetable' | 'applications' | 'students' | 'manage_groups' | 'publish_assessments' | 'message';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -28,6 +34,7 @@ export default function AdminDashboard() {
     { id: 'timetable', icon: <CalendarDays className="w-5 h-5" />, label: 'Timetable' },
     { id: 'applications', icon: <FileText className="w-5 h-5" />, label: 'Applications' },
     { id: 'students', icon: <Users className="w-5 h-5" />, label: 'Students' },
+    { id: 'manage_groups', icon: <Plus className="w-5 h-5" />, label: 'Manage Groups' },
     { id: 'publish_assessments', icon: <Send className="w-5 h-5" />, label: 'Publish Assessments' },
     { id: 'message', icon: <MessageSquare className="w-5 h-5" />, label: 'Message' },
   ];
@@ -154,57 +161,15 @@ export default function AdminDashboard() {
               
               {activeTab === 'timetable' && <AdminTimetable />}
 
-              {activeTab === 'applications' && (
-                <div className="text-center w-full max-w-4xl">
-                   <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-orange-50 text-orange-500 mb-6">
-                      <FileText className="w-10 h-10" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-gray-800 mb-3">Candidate Applications</h3>
-                    <p className="text-gray-500 mb-8">Review and process applications submitted by prospective candidates. Data loaded from Supabase.</p>
-                    <div className="border-2 border-dashed border-gray-200 rounded-xl h-96 flex items-center justify-center bg-gray-50/50 flex-col gap-4">
-                      <span className="text-gray-400 font-medium">Applications Table Placeholder (Supabase Data)</span>
-                    </div>
-                 </div>
-              )}
+              {activeTab === 'applications' && <AdminApplications />}
 
-              {activeTab === 'students' && (
-                <div className="text-center w-full max-w-4xl">
-                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-50 text-emerald-500 mb-6">
-                      <Users className="w-10 h-10" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-gray-800 mb-3">Student Directory</h3>
-                    <p className="text-gray-500 mb-8">View complete student list and edit personal data, groups, and status.</p>
-                    <div className="border-2 border-dashed border-gray-200 rounded-xl h-96 flex items-center justify-center bg-gray-50/50">
-                      <span className="text-gray-400 font-medium">Students Management Table Placeholder</span>
-                    </div>
-                 </div>
-              )}
+              {activeTab === 'students' && <AdminStudents />}
 
-              {activeTab === 'publish_assessments' && (
-                <div className="text-center w-full max-w-2xl">
-                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-violet-50 text-violet-500 mb-6">
-                      <Send className="w-10 h-10" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-gray-800 mb-3">Publish Assessments</h3>
-                    <p className="text-gray-500 mb-8">Create and distribute assessments or grades to specific groups or students.</p>
-                    <div className="border-2 border-dashed border-gray-200 rounded-xl h-64 flex items-center justify-center bg-gray-50/50">
-                      <span className="text-gray-400 font-medium">Publishing Form Placeholder</span>
-                    </div>
-                 </div>
-              )}
+              {activeTab === 'manage_groups' && <AdminGroups />}
 
-              {activeTab === 'message' && (
-                <div className="text-center w-full max-w-2xl">
-                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-pink-50 text-pink-500 mb-6">
-                      <MessageSquare className="w-10 h-10" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-gray-800 mb-3">Messaging System</h3>
-                    <p className="text-gray-500 mb-8">Send notifications directly to students, groups, or other administrators.</p>
-                    <div className="border-2 border-dashed border-gray-200 rounded-xl h-64 flex items-center justify-center bg-gray-50/50">
-                      <span className="text-gray-400 font-medium">Message Compose Placeholder</span>
-                    </div>
-                 </div>
-              )}
+              {activeTab === 'publish_assessments' && <AdminAssessments />}
+
+              {activeTab === 'message' && <AdminMessages />}
 
             </div>
           </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-import { GripVertical, X, Edit2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { GripVertical, X, Edit2, Trash2, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const ROOMS = ['101', '102', '103', '201', '202', '203', 'B1', 'B2', 'Outdoor'];
@@ -96,12 +96,16 @@ export default function AdminTimetable() {
 
   // Week navigation
   const [weekOffset, setWeekOffset] = useState(0);
+  const currentWeekMonday = React.useMemo(() => getMondayOfCurrentWeek(), []);
+  
   const monday = React.useMemo(() => {
-    const m = getMondayOfCurrentWeek();
+    const m = new Date(currentWeekMonday);
     m.setDate(m.getDate() + weekOffset * 7);
     return m;
-  }, [weekOffset]);
+  }, [currentWeekMonday, weekOffset]);
+  
   const weekDates = getWeekDates(monday);
+  const weekStartStr = monday.toISOString().split('T')[0];
 
   const contextMenuRef = useRef<HTMLDivElement>(null);
 
@@ -112,7 +116,11 @@ export default function AdminTimetable() {
   }, []);
 
   const fetchEntries = useCallback(async () => {
-    const { data } = await supabase.from('timetable').select('*');
+    const { data } = await supabase
+      .from('timetable')
+      .select('*')
+      .eq('week_start', weekStartStr);
+      
     const mapped: TimetableEntry[] = (data ?? []).map((row: any) => ({
       id: row.id,
       day_of_week: row.day_of_week,
@@ -121,7 +129,7 @@ export default function AdminTimetable() {
       group_id: Array.isArray(row.group_ids) ? row.group_ids[0] : '',
     }));
     setEntries(mapped);
-  }, []);
+  }, [weekStartStr]);
 
   useEffect(() => {
     Promise.all([fetchGroups(), fetchEntries()]).finally(() => setLoading(false));
@@ -149,6 +157,21 @@ export default function AdminTimetable() {
     return enrichedEntries.filter(e => e.day_of_week === day && e.time_slot === slot);
   }
 
+  function getColorForRoom(room: string) {
+    const colors: Record<string, string> = {
+      '101': 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100',
+      '102': 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100',
+      '103': 'bg-violet-50 border-violet-200 text-violet-700 hover:bg-violet-100',
+      '201': 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100',
+      '202': 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100',
+      '203': 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100',
+      'B1': 'bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200',
+      'B2': 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200',
+      'Outdoor': 'bg-lime-50 border-lime-200 text-lime-700 hover:bg-lime-100'
+    };
+    return colors[room] || 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100';
+  }
+
   // ── DB operations ───────────────────────────────────────────────────────────
   async function addEntry(groupId: string, room: string, day: number, slot: string) {
     const dbTime = slotToDbTime(slot);
@@ -157,6 +180,7 @@ export default function AdminTimetable() {
       time_slot: dbTime,
       room,
       group_ids: [groupId],
+      week_start: weekStartStr
     }).select().single();
     if (!error && data) {
       const newEntry: TimetableEntry = {
@@ -201,14 +225,14 @@ export default function AdminTimetable() {
   // ── Drag handlers ───────────────────────────────────────────────────────────
   function onCellDragOver(e: React.DragEvent) {
     e.preventDefault();
-    e.currentTarget.classList.add('bg-blue-50');
+    e.currentTarget.classList.add('bg-blue-50/30');
   }
   function onCellDragLeave(e: React.DragEvent) {
-    e.currentTarget.classList.remove('bg-blue-50');
+    e.currentTarget.classList.remove('bg-blue-50/30');
   }
   function onCellDrop(e: React.DragEvent, day: number, slot: string) {
     e.preventDefault();
-    e.currentTarget.classList.remove('bg-blue-50');
+    e.currentTarget.classList.remove('bg-blue-50/30');
     if (draggingPalette) {
       addEntry(draggingPalette.groupId, draggingPalette.room, day, slot);
       setDraggingPalette(null);
@@ -255,28 +279,37 @@ export default function AdminTimetable() {
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Timetable</h2>
           <p className="text-sm text-gray-500 mt-0.5">
-            Week of {formatDate(weekDates[0])} – {formatDate(weekDates[6])}
+            Manage weekly schedules for your school
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
           <button
             onClick={() => setWeekOffset(o => o - 1)}
-            className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-600 transition-colors"
+            className="p-2 rounded-lg hover:bg-white hover:shadow-sm text-gray-600 transition-all"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <button
-            onClick={() => setWeekOffset(0)}
-            className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
-          >
-            Today
-          </button>
+          <div className="px-4 py-1.5 flex flex-col items-center min-w-[180px]">
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Editing Week</span>
+            <span className="text-sm font-bold text-gray-900">
+              {formatDate(weekDates[0])} – {formatDate(weekDates[6])}
+            </span>
+          </div>
           <button
             onClick={() => setWeekOffset(o => o + 1)}
-            className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-600 transition-colors"
+            className="p-2 rounded-lg hover:bg-white hover:shadow-sm text-gray-600 transition-all"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
+          
+          {weekOffset !== 0 && (
+            <button
+              onClick={() => setWeekOffset(0)}
+              className="ml-2 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-[10px] font-bold uppercase tracking-wider hover:bg-blue-700 transition-all"
+            >
+              Back to Current Week
+            </button>
+          )}
         </div>
       </div>
 
@@ -365,12 +398,12 @@ export default function AdminTimetable() {
                     return (
                       <td
                         key={di}
-                        className="border-r last:border-r-0 border-gray-200 border-b last-row:border-b-0 p-1 align-top min-h-[72px] transition-colors"
+                        className="border-r last:border-r-0 border-gray-200 border-b last-row:border-b-0 p-1 align-top min-h-[84px] transition-colors"
                         onDragOver={onCellDragOver}
                         onDragLeave={onCellDragLeave}
                         onDrop={e => onCellDrop(e, day, slot)}
                       >
-                        <div className="flex flex-col gap-1 min-h-[64px]">
+                        <div className="flex flex-col gap-1 min-h-[76px]">
                           {cellEntries.map(entry => (
                             <div
                               key={entry.id}
@@ -378,15 +411,20 @@ export default function AdminTimetable() {
                               onDragStart={() => setDraggingEntry(entry)}
                               onDragEnd={() => setDraggingEntry(null)}
                               onClick={e => openContextMenu(e, entry)}
-                              className="group relative bg-blue-50 border border-blue-200 rounded-lg px-2 py-1.5 cursor-grab active:cursor-grabbing select-none hover:bg-blue-100 transition-colors"
+                              className={`group relative border rounded-lg px-2 py-1.5 cursor-grab active:cursor-grabbing select-none transition-all ${getColorForRoom(entry.room)}`}
                             >
-                              <div className="text-xs font-bold text-blue-800 leading-tight truncate">{entry.group_name}</div>
-                              <div className="text-[10px] text-blue-500 font-medium mt-0.5">Room {entry.room}</div>
-                              <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <GripVertical className="w-3 h-3 text-blue-400" />
+                              <div className="text-[11px] font-bold leading-tight truncate pr-4">{entry.group_name}</div>
+                              <div className="flex items-center justify-between mt-1">
+                                <span className="text-[9px] font-bold uppercase tracking-wider opacity-80">Room {entry.room}</span>
+                                <GripVertical className="w-2.5 h-2.5 opacity-0 group-hover:opacity-40 transition-opacity" />
                               </div>
                             </div>
                           ))}
+                          {cellEntries.length === 0 && (
+                            <div className="h-full w-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                               <Plus className="w-4 h-4 text-gray-300" />
+                            </div>
+                          )}
                         </div>
                       </td>
                     );
