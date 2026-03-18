@@ -7,7 +7,7 @@ import { useLanguage } from '../context/LanguageContext';
 export default function LoginPage() {
   const { t } = useLanguage();
   const [role, setRole] = useState<'student' | 'admin'>('student');
-  const [email, setEmail] = useState('');
+  const [loginCredential, setLoginCredential] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -20,7 +20,13 @@ export default function LoginPage() {
     setErrorMsg('');
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      let finalEmail = loginCredential.trim();
+      if (!finalEmail.includes('@')) {
+        const cleanUsername = finalEmail.toLowerCase().replace(/[^a-z0-9._-]/g, '');
+        finalEmail = `${cleanUsername}@school.local.com`;
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({ email: finalEmail, password });
       if (error) throw error;
 
       if (data.user) {
@@ -38,7 +44,8 @@ export default function LoginPage() {
         if (role === 'admin') navigate('/admin');
         else navigate('/student');
       }
-    } catch (error: any) {
+    } catch (err: unknown) {
+      console.error(err);
       setErrorMsg(t('wrongCredentials'));
     } finally {
       setIsLoading(false);
@@ -102,15 +109,15 @@ export default function LoginPage() {
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                {role === 'student' ? t('studentEmail') : t('adminEmail')}
+                {role === 'student' ? 'Student Username or Email' : 'Admin Username or Email'}
               </label>
               <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="text"
+                value={loginCredential}
+                onChange={(e) => setLoginCredential(e.target.value)}
                 required
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                placeholder={role === 'student' ? t('studentEmailPlaceholder') : t('adminEmailPlaceholder')}
+                placeholder={role === 'student' ? 'e.g., student_name or email@example.com' : 'e.g., admin_name or email@example.com'}
               />
             </div>
 

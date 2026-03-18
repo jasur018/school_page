@@ -59,13 +59,16 @@ export default function AdminMessages() {
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
       const [broadcastsRes, profilesRes, groupsRes, studentsRes] = await Promise.all([
         supabase.from('broadcasts').select('*').order('created_at', { ascending: false }),
         supabase.from('profiles').select('id, full_name, role'),
         supabase.from('groups').select('id, name'),
-        supabase.from('students').select('id, profiles_id, first_name, last_name, attending_groups, status')
+        supabase.from('students').select('id, profile_id, first_name, last_name, attending_groups, status')
       ]);
 
       if (broadcastsRes.error) throw broadcastsRes.error;
@@ -76,14 +79,14 @@ export default function AdminMessages() {
       
       // Use students directly for active list
       const allStudents = studentsRes.data || [];
-      const studyingStudents = allStudents.filter(s => s.status === 'studying' && s.profiles_id);
+      const studyingStudents = allStudents.filter(s => s.status === 'studying' && s.profile_id);
       
       // Map students to their profile IDs for groups
       const mappedGroups = (groupsRes.data || []).map(g => ({
         ...g,
         student_ids: studyingStudents
           .filter(s => s.attending_groups?.includes(g.id))
-          .map(s => s.profiles_id)
+          .map(s => s.profile_id)
       }));
       setGroups(mappedGroups);
 
@@ -93,7 +96,7 @@ export default function AdminMessages() {
         .map(p => ({ id: p.id, name: p.full_name, role: 'admin' }));
       
       const studentRecipients = studyingStudents.map(s => ({
-        id: s.profiles_id,
+        id: s.profile_id,
         name: `${s.first_name} ${s.last_name}`,
         role: 'student'
       }));

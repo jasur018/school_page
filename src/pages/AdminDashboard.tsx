@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminTimetable from '../components/AdminTimetable';
 import AdminApplications from '../components/AdminApplications';
 import AdminStudents from '../components/AdminStudents';
 import AdminGroups from '../components/AdminGroups';
 import AdminAssessments from '../components/AdminAssessments';
 import AdminMessages from '../components/AdminMessages';
+import AdminManageAccounts from '../components/AdminManageAccounts';
 import { 
   LogOut, 
   Bell, 
@@ -15,11 +16,13 @@ import {
   Send,
   MessageSquare,
   Menu,
-  Plus
+  Plus,
+  Shield
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 
-type TabType = 'timetable' | 'applications' | 'students' | 'manage_groups' | 'publish_assessments' | 'message';
+type TabType = 'timetable' | 'applications' | 'students' | 'manage_groups' | 'publish_assessments' | 'message' | 'manage_accounts';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -30,6 +33,17 @@ export default function AdminDashboard() {
     navigate('/');
   };
 
+  const [displayName, setDisplayName] = useState('Admin');
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      const name = data.user?.user_metadata?.full_name ||
+                   data.user?.email?.split('@')[0] ||
+                   'Admin';
+      setDisplayName(name);
+    });
+  }, []);
+
   const menuItems: { id: TabType; icon: React.ReactNode; label: string }[] = [
     { id: 'timetable', icon: <CalendarDays className="w-5 h-5" />, label: 'Timetable' },
     { id: 'applications', icon: <FileText className="w-5 h-5" />, label: 'Applications' },
@@ -37,6 +51,7 @@ export default function AdminDashboard() {
     { id: 'manage_groups', icon: <Plus className="w-5 h-5" />, label: 'Manage Groups' },
     { id: 'publish_assessments', icon: <Send className="w-5 h-5" />, label: 'Publish Assessments' },
     { id: 'message', icon: <MessageSquare className="w-5 h-5" />, label: 'Message' },
+    { id: 'manage_accounts', icon: <Shield className="w-5 h-5" />, label: 'Manage Accounts' },
   ];
 
   return (
@@ -58,9 +73,9 @@ export default function AdminDashboard() {
             <Bell className="w-5 h-5" />
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
           </button>
-           <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden border border-gray-100">
-             <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" alt="Admin" className="w-full h-full object-cover" />
-           </div>
+          <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+            {displayName.charAt(0).toUpperCase()}
+          </div>
         </div>
       </div>
 
@@ -134,11 +149,10 @@ export default function AdminDashboard() {
             </button>
             <div className="h-8 w-px bg-gray-200 mx-2"></div>
             <button className="flex items-center gap-3 hover:bg-gray-50 p-1.5 pr-3 rounded-full transition-colors border border-transparent hover:border-gray-200">
-               <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden border border-gray-200">
-                 {/* Admin Profile Picture Placeholder */}
-                 <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" alt="Admin" className="w-full h-full object-cover" />
+               <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm shrink-0">
+                 {displayName.charAt(0).toUpperCase()}
                </div>
-               <span className="text-sm font-semibold text-gray-700 hidden sm:block">Admin User</span>
+               <span className="text-sm font-semibold text-gray-700 hidden sm:block max-w-[160px] truncate">{displayName}</span>
             </button>
           </div>
         </div>
@@ -155,9 +169,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Content Area Rendering based on Active Tab */}
-            <div className={`bg-white rounded-2xl shadow-sm border border-gray-200 min-h-[500px] ${
-              activeTab === 'timetable' ? 'p-4 sm:p-6' : 'flex items-center justify-center p-8'
-            }`}>
+            <div className={`bg-white rounded-2xl shadow-sm border border-gray-200 min-h-[500px] p-4 sm:p-6 lg:p-8`}>
               
               {activeTab === 'timetable' && <AdminTimetable />}
 
@@ -170,6 +182,8 @@ export default function AdminDashboard() {
               {activeTab === 'publish_assessments' && <AdminAssessments />}
 
               {activeTab === 'message' && <AdminMessages />}
+
+              {activeTab === 'manage_accounts' && <AdminManageAccounts />}
 
             </div>
           </div>

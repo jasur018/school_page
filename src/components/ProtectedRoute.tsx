@@ -14,30 +14,46 @@ export default function ProtectedRoute({ children, requiredRole }: ProtectedRout
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      try {
+        // Add a timeout to prevent permanent loading
+        const timeout = setTimeout(() => {
+          if (status === 'loading') {
+            console.error('ProtectedRoute: Auth check timed out');
+            setStatus('unauthorized');
+          }
+        }, 10000);
 
-      if (!session || !session.user) {
-        console.warn('ProtectedRoute: No active session found.');
-        setStatus('unauthorized');
-        return;
-      }
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError || !session || !session.user) {
+          console.warn('ProtectedRoute: No active session found.');
+          clearTimeout(timeout);
+          setStatus('unauthorized');
+          return;
+        }
 
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single();
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
 
-      if (profileError) {
-        console.error('ProtectedRoute: Failed to fetch profile.', profileError.message);
-        setStatus('unauthorized');
-        return;
-      }
+        clearTimeout(timeout);
 
-      if (profile && profile.role === requiredRole) {
-        setStatus('authorized');
-      } else {
-        console.warn(`ProtectedRoute: Role mismatch. Got '${profile?.role}', required '${requiredRole}'.`);
+        if (profileError) {
+          console.error('ProtectedRoute: Failed to fetch profile.', profileError.message);
+          setStatus('unauthorized');
+          return;
+        }
+
+        if (profile && profile.role === requiredRole) {
+          setStatus('authorized');
+        } else {
+          console.warn(`ProtectedRoute: Role mismatch. Got '${profile?.role}', required '${requiredRole}'.`);
+          setStatus('unauthorized');
+        }
+      } catch (err) {
+        console.error('ProtectedRoute: Unexpected error during auth check', err);
         setStatus('unauthorized');
       }
     };
