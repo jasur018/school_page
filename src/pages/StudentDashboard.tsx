@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { LogOut, MessageSquare, Settings, Users, AlertCircle } from 'lucide-react';
+import { LogOut, MessageSquare, Settings, Users, AlertCircle, User, CalendarDays, Award } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { supabase } from '../lib/supabase';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 interface Student {
   id: string;
@@ -56,6 +57,7 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(true);
   const [dataLoading, setDataLoading] = useState(false);
   const [authDisplayName, setAuthDisplayName] = useState('');
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchData();
@@ -86,7 +88,7 @@ export default function StudentDashboard() {
 
       // Set display name from auth
       const user = userRes.data.user;
-      const name = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Parent';
+      const name = user?.user_metadata?.full_name || user?.email?.split('@')[0] || t('parent');
       setAuthDisplayName(name);
 
       if (fetchedStudents.length > 0) {
@@ -163,7 +165,7 @@ export default function StudentDashboard() {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center space-y-4">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <p className="text-gray-500 font-medium">Loading dashboard...</p>
+        <p className="text-gray-500 font-medium">{t('loadingDashboard')}</p>
       </div>
     );
   }
@@ -192,7 +194,7 @@ export default function StudentDashboard() {
                 ))}
               </select>
             ) : (
-              <span className="text-gray-500 font-medium text-sm">No connected students</span>
+              <span className="text-gray-500 font-medium text-sm">{t('noConnectedStudents')}</span>
             )}
           </div>
 
@@ -203,19 +205,20 @@ export default function StudentDashboard() {
                 {authDisplayName}
               </span>
             )}
+            <LanguageSwitcher theme="light" />
             <button 
               onClick={() => navigate('/messages')}
               className="p-2.5 rounded-full bg-white border border-gray-100 shadow-sm text-gray-600 hover:text-blue-600 transition-all hover:border-blue-100"
             >
               <MessageSquare size={18} />
             </button>
-            <button className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors" title="Settings">
+            <button className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors" title={t('settings')}>
               <Settings className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
             <button 
               onClick={handleLogout}
               className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors" 
-              title="Log out"
+              title={t('logout')}
             >
               <LogOut className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
@@ -232,13 +235,8 @@ export default function StudentDashboard() {
             <div className="flex flex-col md:flex-row p-6 md:p-8 gap-8">
               {/* Left side: Photo */}
               <div className="w-full sm:w-64 md:w-1/3 max-w-[240px] mx-auto md:mx-0 flex-shrink-0">
-                <div className="w-full aspect-[3/4] bg-gray-200 rounded-xl overflow-hidden relative shadow-sm border border-gray-100">
-                  {/* Placeholder Image */}
-                  <img 
-                    src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=533&fit=crop" 
-                    alt="Student Profile" 
-                    className="w-full h-full object-cover"
-                  />
+                <div className="w-full aspect-[3/4] bg-gray-100 rounded-xl flex items-center justify-center relative shadow-sm border border-gray-200">
+                  <User className="w-32 h-32 text-gray-300" strokeWidth={1.5} />
                 </div>
               </div>
 
@@ -249,10 +247,10 @@ export default function StudentDashboard() {
                     {selectedStudent.first_name} {selectedStudent.last_name}
                   </h2>
                   <div className="flex items-center gap-3 mt-1">
-                    <p className="text-gray-500 text-lg font-medium">Student</p>
+                    <p className="text-gray-500 text-lg font-medium">{t('studentRole')}</p>
                     {selectedStudent.status === 'left_school' && (
                       <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-orange-100 text-orange-700">
-                        Left School
+                        {t('leftSchoolStatus')}
                       </span>
                     )}
                   </div>
@@ -260,23 +258,23 @@ export default function StudentDashboard() {
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-gray-100">
                   <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">First Name</span>
+                    <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">{t('firstName')}</span>
                     <span className="text-lg text-gray-900 font-medium">{selectedStudent.first_name}</span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Last Name</span>
+                    <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">{t('lastName')}</span>
                     <span className="text-lg text-gray-900 font-medium">{selectedStudent.last_name}</span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Grade</span>
-                    <span className="text-lg text-gray-900 font-medium">{selectedStudent.grade ? `Grade ${selectedStudent.grade}` : 'N/A'}</span>
+                    <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">{t('grade')}</span>
+                    <span className="text-lg text-gray-900 font-medium">{selectedStudent.grade ? `${t('grade')} ${selectedStudent.grade}` : 'N/A'}</span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Join Date</span>
+                    <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">{t('joinDate')}</span>
                     <span className="text-lg text-gray-900 font-medium">{formatDate(selectedStudent.join_date)}</span>
                   </div>
                   <div className="flex flex-col sm:col-span-2">
-                    <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Attended Groups</span>
+                    <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">{t('attendedGroups')}</span>
                     <div className="flex flex-wrap gap-2 mt-2">
                       {selectedStudent.attending_groups && selectedStudent.attending_groups.length > 0 ? (
                         selectedStudent.attending_groups.map((groupId, index) => {
@@ -294,7 +292,7 @@ export default function StudentDashboard() {
                           );
                         })
                       ) : (
-                        <span className="text-gray-400 italic text-sm">Not attending any groups yet.</span>
+                        <span className="text-gray-400 italic text-sm">{t('notAttendingGroups')}</span>
                       )}
                     </div>
                   </div>
@@ -307,9 +305,9 @@ export default function StudentDashboard() {
             <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
               <AlertCircle className="w-8 h-8 text-gray-400" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No Students Connected</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">{t('noStudentsConnectedTitle')}</h3>
             <p className="text-gray-500 max-w-md mx-auto">
-              Your profile is not linked to any active students. Please contact the school administrator to have your child's profile linked to your account.
+              {t('noStudentsConnectedDescription')}
             </p>
           </div>
         )}
@@ -319,23 +317,25 @@ export default function StudentDashboard() {
           <div className="bg-white p-1 rounded-xl shadow-sm border border-gray-200 inline-flex flex-wrap sm:flex-nowrap">
             <button
               onClick={() => setActiveTab('timetable')}
-              className={`px-6 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 flex-1 sm:flex-none whitespace-nowrap ${
+              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold transition-all duration-200 ${
                 activeTab === 'timetable' 
-                  ? 'bg-blue-600 text-white shadow' 
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'bg-blue-600 text-white shadow-md transform scale-[1.02]' 
+                  : 'bg-white text-gray-600 hover:bg-gray-50'
               }`}
             >
-              Timetable Board
+              <CalendarDays className="w-5 h-5" />
+              {t('studentTabTimetable')}
             </button>
             <button
               onClick={() => setActiveTab('assessments')}
-              className={`px-6 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 flex-1 sm:flex-none whitespace-nowrap ${
+              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold transition-all duration-200 ${
                 activeTab === 'assessments' 
-                  ? 'bg-blue-600 text-white shadow' 
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'bg-blue-600 text-white shadow-md transform scale-[1.02]' 
+                  : 'bg-white text-gray-600 hover:bg-gray-50'
               }`}
             >
-              Assessments Window
+              <Award className="w-5 h-5" />
+              {t('studentTabAssessments')}
             </button>
           </div>
         </div>

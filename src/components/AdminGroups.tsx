@@ -8,7 +8,11 @@ import {
   GraduationCap,
   Briefcase,
   Search,
-  Trash2
+  Trash2,
+  CheckSquare,
+  Square,
+  AlertTriangle,
+  Clock
 } from 'lucide-react';
 
 interface Group {
@@ -21,6 +25,7 @@ interface Group {
 interface Teacher {
   id: string;
   full_name: string;
+  responsible_groups?: string[];
 }
 
 interface Student {
@@ -52,6 +57,25 @@ export default function AdminGroups() {
   // Form States
   const [newGroupName, setNewGroupName] = useState('');
   const [newGroupDate, setNewGroupDate] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Selection & Deletion States
+  const [isDeleteMode, setIsDeleteMode] = useState(false);
+  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteTimer, setDeleteTimer] = useState(10);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (showDeleteConfirm && deleteTimer > 0) {
+      interval = setInterval(() => {
+        setDeleteTimer(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [showDeleteConfirm, deleteTimer]);
   
   useEffect(() => {
     fetchData();
@@ -80,8 +104,9 @@ export default function AdminGroups() {
 
   const handleCreateGroup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newGroupName.trim()) return;
+    if (!newGroupName.trim() || isSubmitting) return;
 
+    setIsSubmitting(true);
     try {
       const { data, error } = await supabase
         .from('groups')
@@ -101,6 +126,8 @@ export default function AdminGroups() {
       }
     } catch (err) {
       console.error('Error creating group:', err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -154,8 +181,84 @@ export default function AdminGroups() {
     }
   };
 
+  const toggleGroupSelection = (id: string) => {
+    setSelectedGroupIds(prev => 
+      prev.includes(id) ? prev.filter(gid => gid !== id) : [...prev, id]
+    );
+  };
+
+  const handleDeleteGroups = async () => {
+    setIsDeleting(true);
+    try {
+      // 1. Cleanup Timetable
+      const { data: timetableEntries } = await supabase
+        .from('timetable')
+        .select('id, group_ids')
+        .overlaps('group_ids', selectedGroupIds);
+      
+      if (timetableEntries) {
+        for (const entry of timetableEntries) {
+          const newIds = entry.group_ids.filter((id: string) => !selectedGroupIds.includes(id));
+          if (newIds.length === 0) {
+            await supabase.from('timetable').delete().eq('id', entry.id);
+          } else {
+            await supabase.from('timetable').update({ group_ids: newIds }).eq('id', entry.id);
+          }
+        }
+      }
+
+      // 2. Cleanup Students
+      const { data: studentEntries } = await supabase
+        .from('students')
+        .select('id, attending_groups')
+        .overlaps('attending_groups', selectedGroupIds);
+      
+      if (studentEntries) {
+        for (const student of studentEntries) {
+          const newIds = student.attending_groups.filter((id: string) => !selectedGroupIds.includes(id));
+          await supabase.from('students').update({ attending_groups: newIds }).eq('id', student.id);
+        }
+      }
+
+      // 3. Cleanup Teachers
+      const { data: teacherEntries } = await supabase
+        .from('teachers')
+        .select('id, responsible_groups');
+      
+      if (teacherEntries) {
+        for (const teacher of teacherEntries) {
+          if (teacher.responsible_groups?.some((id: string) => selectedGroupIds.includes(id))) {
+            const newGroups = teacher.responsible_groups.filter((id: string) => !selectedGroupIds.includes(id));
+            await supabase.from('teachers').update({ responsible_groups: newGroups }).eq('id', teacher.id);
+          }
+        }
+      }
+
+      // 4. Delete Groups records
+      const { error } = await supabase
+        .from('groups')
+        .delete()
+        .in('id', selectedGroupIds);
+
+      if (error) throw error;
+
+      await fetchData();
+      setIsDeleteMode(false);
+      setSelectedGroupIds([]);
+      setShowDeleteConfirm(false);
+    } catch (err) {
+      console.error('Error deleting groups:', err);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const getStudentCount = (groupId: string) => {
     return students.filter(s => s.attending_groups?.includes(groupId)).length;
+  };
+
+  const handleExpand = (id: string | null) => {
+    setExpandedId(expandedId === id ? null : id);
   };
 
   if (loading) {
@@ -175,13 +278,51 @@ export default function AdminGroups() {
           <GraduationCap className="w-6 h-6 text-blue-600" />
           School Groups
         </h2>
-        <button 
-          onClick={() => setShowNewGroupDialog(true)}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
-        >
-          <Plus className="w-4 h-4" />
-          New Group
-        </button>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          {isDeleteMode ? (
+            <>
+              <button 
+                onClick={() => {
+                  setIsDeleteMode(false);
+                  setSelectedGroupIds([]);
+                }}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-gray-100 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-200 transition-all"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  if (selectedGroupIds.length > 0) {
+                    setDeleteTimer(10);
+                    setShowDeleteConfirm(true);
+                  }
+                }}
+                disabled={selectedGroupIds.length === 0}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-red-600 text-white rounded-xl font-bold text-sm hover:bg-red-700 transition-all shadow-lg shadow-red-100 disabled:opacity-50 disabled:shadow-none"
+              >
+                <Trash2 className="w-4 h-4" />
+                Confirm Removal ({selectedGroupIds.length})
+              </button>
+            </>
+          ) : (
+            <>
+              <button 
+                onClick={() => setIsDeleteMode(true)}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold text-sm hover:border-red-200 hover:text-red-600 transition-all shadow-sm"
+              >
+                <Trash2 className="w-4 h-4" />
+                Remove Groups
+              </button>
+              <button 
+                onClick={() => setShowNewGroupDialog(true)}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
+              >
+                <Plus className="w-4 h-4" />
+                New Group
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Groups List */}
@@ -200,40 +341,59 @@ export default function AdminGroups() {
               }`}
             >
               <div 
-                className="p-5 flex items-center justify-between cursor-pointer"
-                onClick={() => setExpandedId(expandedId === group.id ? null : group.id)}
+                className={`p-5 flex items-center gap-4 cursor-pointer`}
+                onClick={() => {
+                  if (isDeleteMode) {
+                    toggleGroupSelection(group.id);
+                  } else {
+                    handleExpand(group.id);
+                  }
+                }}
               >
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className="shrink-0 w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                    <Users className="w-6 h-6" />
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="font-bold text-gray-900 truncate">{group.name}</h3>
-                    <div className="flex items-center gap-3 mt-1">
-                      <span className="text-xs text-gray-500 flex items-center gap-1">
-                        <Users className="w-3.5 h-3.5" /> {getStudentCount(group.id)} Students
-                      </span>
-                      <span className="text-xs text-gray-500 flex items-center gap-1">
-                        <Briefcase className="w-3.5 h-3.5" /> {group.responsible_teachers?.length || 0} Teachers
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="hidden sm:flex flex-wrap gap-1 mr-4">
-                    {group.responsible_teachers?.slice(0, 2).map(tid => (
-                      <span key={tid} className="px-2 py-0.5 bg-gray-100 text-[10px] font-bold text-gray-600 rounded">
-                        {teachers.find(t => t.id === tid)?.full_name || 'Teacher'}
-                      </span>
-                    ))}
-                    {group.responsible_teachers?.length > 2 && (
-                      <span className="px-2 py-0.5 bg-gray-100 text-[10px] font-bold text-gray-400 rounded">
-                        +{group.responsible_teachers.length - 2}
-                      </span>
+                {isDeleteMode && (
+                  <div className="shrink-0 scale-110">
+                    {selectedGroupIds.includes(group.id) ? (
+                      <CheckSquare className="w-6 h-6 text-red-600 fill-red-50" />
+                    ) : (
+                      <Square className="w-6 h-6 text-gray-300" />
                     )}
                   </div>
-                  <div className="p-2 text-gray-400">
-                    {expandedId === group.id ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                )}
+                <div className="flex-1 flex items-center justify-between min-w-0">
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className={`shrink-0 w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+                      isDeleteMode && selectedGroupIds.includes(group.id) ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'
+                    }`}>
+                      <Users className="w-6 h-6" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-gray-900 truncate">{group.name}</h3>
+                      <div className="flex items-center gap-3 mt-1">
+                        <span className="text-xs text-gray-500 flex items-center gap-1">
+                          <Users className="w-3.5 h-3.5" /> {getStudentCount(group.id)} Students
+                        </span>
+                        <span className="text-xs text-gray-500 flex items-center gap-1">
+                          <Briefcase className="w-3.5 h-3.5" /> {group.responsible_teachers?.length || 0} Teachers
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="hidden sm:flex flex-wrap gap-1 mr-4">
+                      {group.responsible_teachers?.slice(0, 2).map(tid => (
+                        <span key={tid} className="px-2 py-0.5 bg-gray-100 text-[10px] font-bold text-gray-600 rounded">
+                          {teachers.find(t => t.id === tid)?.full_name || 'Teacher'}
+                        </span>
+                      ))}
+                      {group.responsible_teachers?.length > 2 && (
+                        <span className="px-2 py-0.5 bg-gray-100 text-[10px] font-bold text-gray-400 rounded">
+                          +{group.responsible_teachers.length - 2}
+                        </span>
+                      )}
+                    </div>
+                    <div className="p-2 text-gray-400">
+                      {expandedId === group.id ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -423,15 +583,17 @@ export default function AdminGroups() {
                 <button 
                   type="button"
                   onClick={() => setShowNewGroupDialog(false)}
-                  className="flex-1 py-3 text-sm font-bold text-gray-500 hover:bg-gray-50 rounded-2xl transition-colors"
+                  disabled={isSubmitting}
+                  className="flex-1 py-3 text-sm font-bold text-gray-500 hover:bg-gray-50 rounded-2xl transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit"
-                  className="flex-1 py-3 text-sm font-bold bg-blue-600 text-white hover:bg-blue-700 rounded-2xl transition-all shadow-lg shadow-blue-100"
+                  disabled={isSubmitting}
+                  className="flex-1 py-3 text-sm font-bold bg-blue-600 text-white hover:bg-blue-700 rounded-2xl transition-all shadow-lg shadow-blue-100 disabled:opacity-50 disabled:shadow-none"
                 >
-                  Create Group
+                  {isSubmitting ? 'Creating...' : 'Create Group'}
                 </button>
               </div>
             </form>
@@ -439,7 +601,7 @@ export default function AdminGroups() {
         </div>
       )}
 
-      {/* Confirmation Dialog */}
+      {/* Enrollment Confirmation Dialog */}
       {confirmAction && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setConfirmAction(null)}></div>
@@ -478,6 +640,64 @@ export default function AdminGroups() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Master Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-md" onClick={() => !isDeleting && setShowDeleteConfirm(false)}></div>
+          <div className="relative bg-white rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="p-8 text-center">
+              <div className="w-20 h-20 rounded-3xl bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-6 rotate-3">
+                <AlertTriangle className="w-10 h-10" />
+              </div>
+              
+              <h3 className="text-2xl font-black text-gray-900 mb-3 tracking-tight">Warning: Irreversible Action</h3>
+              <p className="text-gray-500 text-sm leading-relaxed mb-8">
+                You are about to delete <span className="font-bold text-red-600">{selectedGroupIds.length} groups</span>. 
+                This will also remove them from all <span className="font-bold text-gray-800">Timetables</span> and 
+                <span className="font-bold text-gray-800"> Student records</span>. 
+                <br/><span className="text-gray-400 text-xs mt-2 block">(Assessment history will be preserved as 'Deleted Group')</span>
+              </p>
+
+              <div className="space-y-3">
+                <button 
+                  disabled={deleteTimer > 0 || isDeleting}
+                  onClick={handleDeleteGroups}
+                  className="w-full py-4 bg-red-600 text-white rounded-2xl font-bold text-sm hover:bg-red-700 transition-all shadow-lg shadow-red-100 disabled:bg-gray-200 disabled:shadow-none disabled:text-gray-400 flex items-center justify-center gap-3"
+                >
+                  {isDeleting ? (
+                    'Deleting...'
+                  ) : deleteTimer > 0 ? (
+                    <>
+                      <Clock className="w-4 h-4 animate-pulse" />
+                      Wait {deleteTimer}s to confirm
+                    </>
+                  ) : (
+                    'Yes, Delete Everything'
+                  )}
+                </button>
+                <button 
+                  disabled={isDeleting}
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="w-full py-4 text-sm font-bold text-gray-500 hover:bg-gray-50 rounded-2xl transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+            
+            {/* Minimal Progress Bar */}
+            {deleteTimer > 0 && (
+              <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gray-100">
+                <div 
+                  className="h-full bg-red-600 transition-all duration-1000 ease-linear"
+                  style={{ width: `${(10 - deleteTimer) * 10}%` }}
+                />
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -77,7 +77,7 @@ export default function AdminAssessments() {
 
   const handlePublish = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedGroupId) return;
+    if (!selectedGroupId || isSubmitting) return;
 
     setIsSubmitting(true);
     try {

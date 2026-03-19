@@ -2,17 +2,11 @@ import { useState, useEffect } from 'react';
 import { School, LogIn } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
-import { Language } from '../lib/i18n';
-
-const languageLabels: Record<Language, string> = {
-  en: 'EN',
-  uz: 'UZ',
-  ru: 'RU',
-};
+import LanguageSwitcher from './LanguageSwitcher';
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
-  const { language, setLanguage, t } = useLanguage();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -40,27 +34,7 @@ export default function Header() {
 
         <div className="flex items-center gap-3">
           {/* Language Switcher */}
-          <div className={`flex rounded-full overflow-hidden border text-sm font-semibold ${
-            isScrolled ? 'border-gray-200' : 'border-white/30'
-          }`}>
-            {(Object.keys(languageLabels) as Language[]).map((lang) => (
-              <button
-                key={lang}
-                onClick={() => setLanguage(lang)}
-                className={`px-3 py-1.5 transition-all duration-200 ${
-                  language === lang
-                    ? isScrolled
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white/30 text-white'
-                    : isScrolled
-                      ? 'text-gray-600 hover:bg-gray-100'
-                      : 'text-white/80 hover:text-white hover:bg-white/10'
-                }`}
-              >
-                {languageLabels[lang]}
-              </button>
-            ))}
-          </div>
+          <LanguageSwitcher theme={isScrolled ? 'light' : 'glass'} />
 
           {/* Login Button */}
           <Link

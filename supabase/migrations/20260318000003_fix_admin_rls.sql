@@ -10,10 +10,8 @@ language sql
 security definer
 set search_path = public
 as $$
-  select exists (
-    select 1 from profiles
-    where id = auth.uid() and role = 'admin'
-  );
+  -- Use JWT metadata to prevent recursive RLS lookups on the profiles table
+  select coalesce(auth.jwt() -> 'user_metadata' ->> 'role', '') = 'admin';
 $$;
 
 -- 2. Update `groups` policies

@@ -112,7 +112,7 @@ export default function AdminMessages() {
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!subject || !content || selectedRecipientIds.length === 0) return;
+    if (!subject || !content || selectedRecipientIds.length === 0 || isSending) return;
 
     setIsSending(true);
     try {

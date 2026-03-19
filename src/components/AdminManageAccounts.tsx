@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Shield, Users, Mail, Lock, Plus, Search, Check, AlertCircle } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface AccountFormData {
   fullName: string;
@@ -11,6 +12,7 @@ interface AccountFormData {
 }
 
 export default function AdminManageAccounts() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'admins' | 'parents'>('parents');
   
   // Data State
@@ -57,12 +59,13 @@ export default function AdminManageAccounts() {
 
   const handleCreateAccount = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
     setMessage({ type: '', text: '' });
 
     try {
       if (formData.password !== formData.confirmPassword) {
-        throw new Error("Passwords do not match.");
+        throw new Error(t('acc_passMismatch') as string);
       }
 
       // 1. Determine the email
@@ -119,7 +122,7 @@ export default function AdminManageAccounts() {
           .in('id', formData.connectedPeople);
       }
 
-      setMessage({ type: 'success', text: `${role === 'admin' ? 'Admin' : 'Parent'} account created successfully!` });
+      setMessage({ type: 'success', text: role === 'admin' ? t('acc_successAdmin') as string : t('acc_successParent') as string });
       
       // Reset form
       setFormData({
@@ -134,9 +137,9 @@ export default function AdminManageAccounts() {
     } catch (err: unknown) {
       console.error(err);
       if (err instanceof Error) {
-        setMessage({ type: 'error', text: err.message || 'Error creating account.' });
+        setMessage({ type: 'error', text: err.message || (t('acc_errorGeneric') as string) });
       } else {
-        setMessage({ type: 'error', text: 'Error creating account.' });
+        setMessage({ type: 'error', text: t('acc_errorGeneric') as string });
       }
     } finally {
       setLoading(false);
@@ -175,7 +178,7 @@ export default function AdminManageAccounts() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
           <Shield className="w-6 h-6 text-indigo-600" />
-          Manage Accounts
+          {t('acc_manageAccounts')}
         </h2>
         
         <div className="flex bg-gray-100 p-1 rounded-xl w-full sm:w-auto">
@@ -188,7 +191,7 @@ export default function AdminManageAccounts() {
             }`}
           >
             <Users className="w-4 h-4" />
-            Parents
+            {t('acc_parentsTab')}
           </button>
           <button
             onClick={() => setActiveTab('admins')}
@@ -199,7 +202,7 @@ export default function AdminManageAccounts() {
             }`}
           >
             <Shield className="w-4 h-4" />
-            Admins
+            {t('acc_adminsTab')}
           </button>
         </div>
       </div>
@@ -213,14 +216,14 @@ export default function AdminManageAccounts() {
 
       <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
         <h3 className="text-lg font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">
-          Create New {activeTab === 'admins' ? 'Admin' : 'Parent'} Account
+          {activeTab === 'admins' ? t('acc_createNewAdmin') : t('acc_createNewParent')}
         </h3>
 
         <form onSubmit={handleCreateAccount} className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Form Fields */}
           <div className="space-y-5">
             <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Full Name</label>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">{t('acc_fullName')}</label>
               <div className="relative">
                 <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input 
@@ -229,13 +232,13 @@ export default function AdminManageAccounts() {
                   value={formData.fullName}
                   onChange={e => setFormData({...formData, fullName: e.target.value})}
                   className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                  placeholder="John Doe"
+                  placeholder={t('acc_fullNamePlaceholder') as string}
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Username or Email</label>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">{t('acc_usernameEmail')}</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input 
@@ -250,7 +253,7 @@ export default function AdminManageAccounts() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Password</label>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">{t('acc_password')}</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input 
@@ -266,7 +269,7 @@ export default function AdminManageAccounts() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Confirm Password</label>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">{t('acc_confirmPassword')}</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input 
@@ -291,7 +294,7 @@ export default function AdminManageAccounts() {
               ) : (
                 <>
                   <Plus className="w-5 h-5" />
-                  Create Account
+                  {t('acc_createAccountBtn')}
                 </>
               )}
             </button>
@@ -300,14 +303,14 @@ export default function AdminManageAccounts() {
           {/* Connected People Selection */}
           <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100 h-[400px] flex flex-col">
             <h4 className="text-sm font-bold text-gray-800 mb-3">
-              {activeTab === 'admins' ? 'Connect Teacher Profile (Max 1)' : 'Connect Children Profiles'}
+              {activeTab === 'admins' ? t('acc_connectTeacher') : t('acc_connectChildren')}
             </h4>
             
             <div className="relative mb-4">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input 
                 type="text" 
-                placeholder="Search..."
+                placeholder={t('acc_search') as string}
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all py-2"
@@ -317,7 +320,7 @@ export default function AdminManageAccounts() {
             <div className="flex-1 overflow-y-auto space-y-2 pr-2">
               {activeTab === 'admins' ? (
                 filteredTeachers.length === 0 ? (
-                  <p className="text-gray-500 text-xs text-center mt-10">No teachers found.</p>
+                  <p className="text-gray-500 text-xs text-center mt-10">{t('acc_noTeachers')}</p>
                 ) : (
                   filteredTeachers.map(teacher => (
                     <div 
@@ -340,7 +343,7 @@ export default function AdminManageAccounts() {
                 )
               ) : (
                 filteredStudents.length === 0 ? (
-                  <p className="text-gray-500 text-xs text-center mt-10">No unlinked students found.</p>
+                  <p className="text-gray-500 text-xs text-center mt-10">{t('acc_noStudents')}</p>
                 ) : (
                   filteredStudents.map(student => (
                     <div 
@@ -372,23 +375,23 @@ export default function AdminManageAccounts() {
       {/* Account List */}
       <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
         <h3 className="text-lg font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">
-          All Accounts List
+          {t('acc_allAccountsList')}
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="text-left bg-gray-50/50">
-                <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider rounded-l-lg">Full Name</th>
-                <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Username</th>
-                <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Role</th>
-                <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider rounded-r-lg">Connections Count</th>
+                <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider rounded-l-lg">{t('acc_colName')}</th>
+                <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('acc_colUsername')}</th>
+                <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('acc_colRole')}</th>
+                <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider rounded-r-lg">{t('acc_colConnections')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {accounts.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-4 py-8 text-center text-gray-500 text-sm">
-                    No accounts found or you do not have permission to view them.
+                    {t('acc_noAccounts')}
                   </td>
                 </tr>
               ) : (
@@ -406,7 +409,7 @@ export default function AdminManageAccounts() {
                           ? 'bg-indigo-50 text-indigo-700' 
                           : 'bg-emerald-50 text-emerald-700'
                       }`}>
-                        {acc.role}
+                        {acc.role === 'admin' ? t('acc_roleAdmin') : t('acc_roleParent')}
                       </span>
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-600 font-medium">

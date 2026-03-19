@@ -13,32 +13,57 @@ export default function ProtectedRoute({ children, requiredRole }: ProtectedRout
   const { t } = useLanguage();
 
   useEffect(() => {
+    let mounted = true;
+    let timeout: ReturnType<typeof setTimeout>;
+    const abortController = new AbortController();
+
     const checkAuth = async () => {
       try {
-        // Add a timeout to prevent permanent loading
-        const timeout = setTimeout(() => {
-          if (status === 'loading') {
-            console.error('ProtectedRoute: Auth check timed out');
+        // Add a 35-second timeout to accommodate Supabase Free Tier cold starts (usually ~20-30s)
+        timeout = setTimeout(() => {
+          if (mounted) {
+            console.error('ProtectedRoute: Auth check timed out after 35 seconds');
             setStatus('unauthorized');
           }
-        }, 10000);
+        }, 35000);
 
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError || !session || !session.user) {
           console.warn('ProtectedRoute: No active session found.');
           clearTimeout(timeout);
-          setStatus('unauthorized');
+          if (mounted) setStatus('unauthorized');
           return;
         }
 
+        if (!mounted) return;
+
+        // OPTIMIZATION: Check JWT metadata for the role first to skip the database query completely 
+        // This makes role verification instant and entirely avoids cold-start delays for routing!
+        const jwtRole = session.user.user_metadata?.role;
+        
+        if (jwtRole) {
+          clearTimeout(timeout);
+          if (jwtRole === requiredRole) {
+            setStatus('authorized');
+          } else {
+            console.warn(`ProtectedRoute: Role mismatch in JWT. Got '${jwtRole}', required '${requiredRole}'.`);
+            setStatus('unauthorized');
+          }
+          return;
+        }
+
+        // FALLBACK: Query the database if JWT doesn't have the role (legacy accounts)
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', session.user.id)
+          .abortSignal(abortController.signal)
           .single();
 
         clearTimeout(timeout);
+
+        if (!mounted) return;
 
         if (profileError) {
           console.error('ProtectedRoute: Failed to fetch profile.', profileError.message);
@@ -52,13 +77,26 @@ export default function ProtectedRoute({ children, requiredRole }: ProtectedRout
           console.warn(`ProtectedRoute: Role mismatch. Got '${profile?.role}', required '${requiredRole}'.`);
           setStatus('unauthorized');
         }
-      } catch (err) {
-        console.error('ProtectedRoute: Unexpected error during auth check', err);
-        setStatus('unauthorized');
+      } catch (err: any) {
+        clearTimeout(timeout);
+        
+        // Ignore AbortError as it's an intended cancellation during Strict Mode unmount
+        if (err?.name === 'AbortError') return;
+
+        if (mounted) {
+          console.error('ProtectedRoute: Unexpected error during auth check', err);
+          setStatus('unauthorized');
+        }
       }
     };
 
     checkAuth();
+
+    return () => {
+      mounted = false;
+      abortController.abort();
+      if (timeout) clearTimeout(timeout);
+    };
   }, [requiredRole]);
 
   if (status === 'loading') {

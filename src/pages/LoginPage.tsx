@@ -3,6 +3,7 @@ import { ArrowLeft, School, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useLanguage } from '../context/LanguageContext';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 export default function LoginPage() {
   const { t } = useLanguage();
@@ -26,8 +27,28 @@ export default function LoginPage() {
         finalEmail = `${cleanUsername}@school.local.com`;
       }
 
-      const { data, error } = await supabase.auth.signInWithPassword({ email: finalEmail, password });
+      let data, error;
+      let retries = 3;
+      
+      // Auto-retry specifically designed to handle Supabase DB cold-starts (504 Gateway Timeout)
+      while (retries > 0) {
+        const res = await supabase.auth.signInWithPassword({ email: finalEmail, password });
+        data = res.data;
+        error = res.error;
+        
+        if (error && (error.name === 'AuthRetryableFetchError' || error.message.includes('504') || error.status === 504)) {
+          retries--;
+          if (retries > 0) {
+            // Wait 5 seconds before retrying mapping to cold start boot time
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            continue;
+          }
+        }
+        break;
+      }
+
       if (error) throw error;
+      if (!data) throw new Error('Login failed. Please try again.');
 
       if (data.user) {
         const { data: profile, error: profileError } = await supabase
@@ -54,6 +75,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-6 relative">
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20">
+        <LanguageSwitcher theme="light" />
+      </div>
+
       <div className="absolute inset-0 z-0">
         <img src="/school_hero.png" alt="School building" className="w-full h-full object-cover opacity-20" />
         <div className="absolute inset-0 bg-blue-900/40 mix-blend-multiply"></div>

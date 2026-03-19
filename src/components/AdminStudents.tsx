@@ -46,6 +46,7 @@ export default function AdminStudents() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showStatusDialog, setShowStatusDialog] = useState<{ id: string, targetStatus: 'studying' | 'left_school' } | null>(null);
   const [showNewStudentDialog, setShowNewStudentDialog] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // New Student Form State
   const [newStudent, setNewStudent] = useState({
@@ -117,6 +118,8 @@ export default function AdminStudents() {
 
   const handleCreateStudent = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const { data, error } = await supabase
         .from('students')
@@ -143,6 +146,8 @@ export default function AdminStudents() {
       }
     } catch (err) {
       console.error('Error creating student:', err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -427,6 +432,7 @@ export default function AdminStudents() {
           onSubmit={handleCreateStudent}
           data={newStudent}
           setData={setNewStudent}
+          isSubmitting={isSubmitting}
         />
       )}
     </div>
@@ -437,12 +443,14 @@ function NewStudentDialog({
   onClose, 
   onSubmit, 
   data, 
-  setData 
+  setData,
+  isSubmitting
 }: { 
   onClose: () => void, 
   onSubmit: (e: React.FormEvent) => void,
   data: any,
-  setData: (val: any) => void
+  setData: (val: any) => void,
+  isSubmitting: boolean
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -491,8 +499,10 @@ function NewStudentDialog({
           </div>
 
           <div className="mt-8 flex gap-3">
-            <button type="button" onClick={onClose} className="flex-1 py-3 text-sm font-bold text-gray-500 hover:bg-gray-50 rounded-2xl transition-colors">Cancel</button>
-            <button type="submit" className="flex-1 py-3 text-sm font-bold bg-blue-600 text-white hover:bg-blue-700 rounded-2xl transition-all shadow-lg shadow-blue-100">Register Student</button>
+            <button type="button" onClick={onClose} disabled={isSubmitting} className="flex-1 py-3 text-sm font-bold text-gray-500 hover:bg-gray-50 rounded-2xl transition-colors disabled:opacity-50">Cancel</button>
+            <button type="submit" disabled={isSubmitting} className="flex-1 py-3 text-sm font-bold bg-blue-600 text-white hover:bg-blue-700 rounded-2xl transition-all shadow-lg shadow-blue-100 disabled:opacity-50 disabled:shadow-none">
+              {isSubmitting ? 'Registering...' : 'Register Student'}
+            </button>
           </div>
         </form>
       </div>
