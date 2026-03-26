@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { useLanguage } from '../context/LanguageContext';
+import { translations } from '../lib/i18n';
 import { GripVertical, X, Edit2, Trash2, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -13,7 +15,7 @@ for (let h = 6; h < 18; h += 2) {
 }
 // ['06:00–08:00', '08:00–10:00', '10:00–12:00', '12:00–14:00', '14:00–16:00', '16:00–18:00']
 
-const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const DAY_KEYS = ['tt_mon', 'tt_tue', 'tt_wed', 'tt_thu', 'tt_fri', 'tt_sat', 'tt_sun'] as const;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Group {
@@ -78,6 +80,9 @@ function dbTimeToSlot(dbTime: string): string {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function AdminTimetable() {
+  const { language } = useLanguage();
+  const t = (key: keyof typeof translations.en) => translations[language][key];
+
   const [groups, setGroups] = useState<Group[]>([]);
   const [entries, setEntries] = useState<TimetableEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -277,9 +282,9 @@ export default function AdminTimetable() {
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Timetable</h2>
+          <h2 className="text-2xl font-bold text-gray-900">{t('tt_title')}</h2>
           <p className="text-sm text-gray-500 mt-0.5">
-            Manage weekly schedules for your school
+            {t('tt_subtitle')}
           </p>
         </div>
         <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
@@ -290,7 +295,7 @@ export default function AdminTimetable() {
             <ChevronLeft className="w-4 h-4" />
           </button>
           <div className="px-4 py-1.5 flex flex-col items-center min-w-[180px]">
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Editing Week</span>
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">{t('tt_editingWeek')}</span>
             <span className="text-sm font-bold text-gray-900">
               {formatDate(weekDates[0])} – {formatDate(weekDates[6])}
             </span>
@@ -307,7 +312,7 @@ export default function AdminTimetable() {
               onClick={() => setWeekOffset(0)}
               className="ml-2 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-[10px] font-bold uppercase tracking-wider hover:bg-blue-700 transition-all"
             >
-              Back to Current Week
+              {t('tt_backToCurrentWeek')}
             </button>
           )}
         </div>
@@ -315,28 +320,28 @@ export default function AdminTimetable() {
 
       {/* ── Palette ─────────────────────────────────────────────────────────── */}
       <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Add to Timetable — pick group + room, then drag to a cell</p>
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">{t('tt_addToTimetableDesc')}</p>
         <div className="flex flex-wrap gap-3 items-end">
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-gray-500 font-medium">Group</label>
+            <label className="text-xs text-gray-500 font-medium">{t('tt_groupLabel')}</label>
             <select
               className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
               value={selectedGroup}
               onChange={e => setSelectedGroup(e.target.value)}
             >
-              <option value="">Select group…</option>
+              <option value="">{t('tt_selectGroup')}</option>
               {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
             </select>
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-gray-500 font-medium">Room</label>
+            <label className="text-xs text-gray-500 font-medium">{t('tt_roomLabel')}</label>
             <select
               className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
               value={selectedRoom}
               onChange={e => setSelectedRoom(e.target.value)}
             >
-              <option value="">Select room…</option>
-              {ROOMS.map(r => <option key={r} value={r}>{r}</option>)}
+              <option value="">{t('tt_selectRoom')}</option>
+              {ROOMS.map(r => <option key={r} value={r}>{r === 'Outdoor' ? t('tt_outdoor') : r}</option>)}
             </select>
           </div>
 
@@ -354,13 +359,13 @@ export default function AdminTimetable() {
             >
               <GripVertical className="w-4 h-4 opacity-70" />
               <span>{groups.find(g => g.id === selectedGroup)?.name}</span>
-              <span className="bg-white/20 rounded px-1.5 py-0.5 text-xs">{selectedRoom}</span>
+              <span className="bg-white/20 rounded px-1.5 py-0.5 text-xs">{selectedRoom === 'Outdoor' ? t('tt_outdoor') : selectedRoom}</span>
             </div>
           )}
           {!paletteReady && (
             <div className="flex items-center gap-2 bg-gray-100 text-gray-400 text-sm font-medium px-4 py-2 rounded-xl select-none">
               <GripVertical className="w-4 h-4" />
-              <span>Select group & room first</span>
+              <span>{t('tt_selectGroupRoomFirst')}</span>
             </div>
           )}
         </div>
@@ -368,7 +373,7 @@ export default function AdminTimetable() {
 
       {/* ── Timetable Grid ───────────────────────────────────────────────────── */}
       {loading ? (
-        <div className="flex items-center justify-center h-64 text-gray-400">Loading…</div>
+        <div className="flex items-center justify-center h-64 text-gray-400">{t('tt_loading')}</div>
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-gray-200 shadow-sm bg-white">
           <table className="w-full border-collapse min-w-[700px]">
@@ -376,11 +381,11 @@ export default function AdminTimetable() {
               <tr className="bg-gray-50 border-b border-gray-200">
                 {/* Time column header */}
                 <th className="w-28 px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-200">
-                  Time
+                  {t('tt_time')}
                 </th>
                 {weekDates.map((d, i) => (
                   <th key={i} className="px-3 py-3 text-center border-r last:border-r-0 border-gray-200">
-                    <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{DAY_NAMES[i]}</div>
+                    <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t(DAY_KEYS[i])}</div>
                     <div className={`text-sm font-bold mt-0.5 ${d.toDateString() === new Date().toDateString() ? 'text-blue-600' : 'text-gray-800'}`}>{formatDate(d)}</div>
                   </th>
                 ))}
@@ -415,7 +420,7 @@ export default function AdminTimetable() {
                             >
                               <div className="text-[11px] font-bold leading-tight truncate pr-4">{entry.group_name}</div>
                               <div className="flex items-center justify-between mt-1">
-                                <span className="text-[9px] font-bold uppercase tracking-wider opacity-80">Room {entry.room}</span>
+                                <span className="text-[9px] font-bold uppercase tracking-wider opacity-80">{t('tt_roomPrefix')} {entry.room === 'Outdoor' ? t('tt_outdoor') : entry.room}</span>
                                 <GripVertical className="w-2.5 h-2.5 opacity-0 group-hover:opacity-40 transition-opacity" />
                               </div>
                             </div>
@@ -448,7 +453,7 @@ export default function AdminTimetable() {
             onClick={() => startEdit(contextMenu.entry)}
           >
             <Edit2 className="w-4 h-4 text-gray-400" />
-            Edit entry
+            {t('tt_editEntry')}
           </button>
           <div className="border-t border-gray-100 my-1" />
           <button
@@ -459,7 +464,7 @@ export default function AdminTimetable() {
             }}
           >
             <Trash2 className="w-4 h-4" />
-            Delete
+            {t('tt_delete')}
           </button>
         </div>
       )}
@@ -469,7 +474,7 @@ export default function AdminTimetable() {
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setEditingEntry(null)}>
           <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
-              <h3 className="text-lg font-bold text-gray-900">Edit Entry</h3>
+              <h3 className="text-lg font-bold text-gray-900">{t('tt_editEntryTitle')}</h3>
               <button onClick={() => setEditingEntry(null)} className="p-1 text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
@@ -477,7 +482,7 @@ export default function AdminTimetable() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Group</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('tt_groupLabel')}</label>
                 <select
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                   value={editGroup}
@@ -487,13 +492,13 @@ export default function AdminTimetable() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Room</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('tt_roomLabel')}</label>
                 <select
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                   value={editRoom}
                   onChange={e => setEditRoom(e.target.value)}
                 >
-                  {ROOMS.map(r => <option key={r} value={r}>{r}</option>)}
+                  {ROOMS.map(r => <option key={r} value={r}>{r === 'Outdoor' ? t('tt_outdoor') : r}</option>)}
                 </select>
               </div>
             </div>
@@ -503,13 +508,13 @@ export default function AdminTimetable() {
                 onClick={() => setEditingEntry(null)}
                 className="flex-1 px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
               >
-                Cancel
+                {t('tt_cancel')}
               </button>
               <button
                 onClick={saveEdit}
                 className="flex-1 px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors"
               >
-                Save
+                {t('tt_save')}
               </button>
             </div>
           </div>

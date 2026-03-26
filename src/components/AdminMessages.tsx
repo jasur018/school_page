@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { useLanguage } from '../context/LanguageContext';
+import { translations } from '../lib/i18n';
 import { 
   Send, 
   Search, 
@@ -36,6 +38,9 @@ interface Broadcast {
 }
 
 export default function AdminMessages() {
+  const { language } = useLanguage();
+  const t = (key: keyof typeof translations.en) => translations[language][key];
+
   const [broadcasts, setBroadcasts] = useState<Broadcast[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [recipients, setRecipients] = useState<{id: string, name: string, role: string}[]>([]);
@@ -180,7 +185,7 @@ export default function AdminMessages() {
     return (
       <div className="flex flex-col items-center justify-center h-64 space-y-4">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-        <p className="text-gray-500 font-medium">Loading messages...</p>
+        <p className="text-gray-500 font-medium">{t('msg_loading')}</p>
       </div>
     );
   }
@@ -192,16 +197,16 @@ export default function AdminMessages() {
         <div>
           <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
             <Mail className="w-6 h-6 text-indigo-500" />
-            Messaging Console
+            {t('msg_consoleTitle')}
           </h2>
-          <p className="text-sm text-gray-500 mt-1">Send notifications and updates to the school community</p>
+          <p className="text-sm text-gray-500 mt-1">{t('msg_consoleDesc')}</p>
         </div>
         <button 
           onClick={() => setShowCompose(true)}
           className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
         >
           <Plus className="w-4 h-4" />
-          Compose New Message
+          {t('msg_composeBtn')}
         </button>
       </div>
 
@@ -212,8 +217,8 @@ export default function AdminMessages() {
             <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
               <Mail className="w-8 h-8 text-gray-300" />
             </div>
-            <h3 className="text-lg font-bold text-gray-800">No outgoing messages</h3>
-            <p className="text-gray-500 text-sm max-w-xs mx-auto mt-2">Start communicating with students and teachers by composing a new broadcast.</p>
+            <h3 className="text-lg font-bold text-gray-800">{t('msg_noMessages')}</h3>
+            <p className="text-gray-500 text-sm max-w-xs mx-auto mt-2">{t('msg_noMessagesDesc')}</p>
           </div>
         ) : (
           broadcasts.map((msg) => {
@@ -240,7 +245,7 @@ export default function AdminMessages() {
                           <Clock className="w-3 h-3" /> {formatDate(msg.created_at)}
                         </span>
                         <span className="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                          {msg.recipient_ids.length} Recipients
+                          {msg.recipient_ids.length} {t('msg_recipientsTitle')}
                         </span>
                       </div>
                     </div>
@@ -253,12 +258,12 @@ export default function AdminMessages() {
                 {isExpanded && (
                   <div className="px-5 pb-6 pt-2 border-t border-gray-50 bg-gray-50/30 rounded-b-2xl animate-in slide-in-from-top-2">
                     <div className="mt-4">
-                      <h5 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Content</h5>
+                      <h5 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">{t('msg_content')}</h5>
                       <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
                         {msg.content}
                       </div>
 
-                      <h5 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-6 mb-3">Recipients ({msg.recipient_ids.length})</h5>
+                      <h5 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-6 mb-3">{t('msg_recipientsTitle')} ({msg.recipient_ids.length})</h5>
                       <div className="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                         <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-1 custom-scrollbar">
                           {msg.recipient_ids.map(rid => {
@@ -268,7 +273,7 @@ export default function AdminMessages() {
                                 p?.role === 'admin' ? 'bg-amber-50 border-amber-100 text-amber-700' : 'bg-gray-50 border-gray-100 text-gray-600'
                               }`}>
                                 {p?.role === 'admin' && <CheckCircle2 className="w-3 h-3" />}
-                                {p?.full_name || 'Deleted User'}
+                                {p?.full_name || t('msg_deletedUser')}
                               </div>
                             );
                           })}
@@ -295,7 +300,7 @@ export default function AdminMessages() {
                   <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center">
                     <Mail className="w-5 h-5" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900">New Broadcast</h3>
+                  <h3 className="text-xl font-bold text-gray-900">{t('msg_newBroadcast')}</h3>
                 </div>
                 <button type="button" onClick={() => setShowCompose(false)} className="p-2 hover:bg-white hover:shadow-sm rounded-full text-gray-400 transition-all">
                   <X className="w-6 h-6" />
@@ -307,22 +312,22 @@ export default function AdminMessages() {
                 {/* Left: Inputs */}
                 <div className="flex-1 p-6 space-y-6 overflow-y-auto border-r border-gray-100">
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Subject Line</label>
+                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">{t('msg_subjectLine')}</label>
                     <input 
                       type="text" 
                       value={subject}
                       onChange={(e) => setSubject(e.target.value)}
-                      placeholder="e.g., Important School Update"
+                      placeholder={t('msg_subjectPlaceholder')}
                       className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all shadow-sm"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Message Content</label>
+                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">{t('msg_messageContent')}</label>
                     <textarea 
                       value={content}
                       onChange={(e) => setContent(e.target.value)}
-                      placeholder="Write your message here..."
+                      placeholder={t('msg_messagePlaceholder')}
                       rows={8}
                       className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-3xl text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all shadow-sm resize-none leading-relaxed"
                       required
@@ -333,9 +338,9 @@ export default function AdminMessages() {
                 {/* Right: Recipient Picker */}
                 <div className="w-full md:w-[350px] bg-gray-50/50 p-6 flex flex-col shrink-0">
                   <div className="flex items-center justify-between mb-2 px-1">
-                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Target Recipients</label>
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">{t('msg_targetRecipients')}</label>
                     <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
-                      {selectedRecipientIds.length} Selected
+                      {selectedRecipientIds.length} {t('msg_selected')}
                     </span>
                   </div>
 
@@ -345,7 +350,7 @@ export default function AdminMessages() {
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <input 
                         type="text"
-                        placeholder="Search community..."
+                        placeholder={t('msg_searchCommunity')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-indigo-500"
@@ -353,7 +358,7 @@ export default function AdminMessages() {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                       <p className="text-[10px] font-bold text-gray-400 px-1">Quick Add Groups</p>
+                       <p className="text-[10px] font-bold text-gray-400 px-1">{t('msg_quickAddGroups')}</p>
                        <div className="flex flex-wrap gap-2">
                         {groups.map(g => (
                           <button
@@ -410,7 +415,7 @@ export default function AdminMessages() {
                   onClick={() => setShowCompose(false)}
                   className="flex-1 py-4 bg-gray-50 text-gray-600 rounded-2xl font-bold text-sm hover:bg-gray-100 transition-all"
                 >
-                  Discard
+                  {t('msg_discard')}
                 </button>
                 <button 
                   type="submit"
@@ -420,10 +425,10 @@ export default function AdminMessages() {
                   {isSending ? (
                       <span className="flex items-center gap-2">
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Sending...
+                        {t('msg_sending')}
                       </span>
                   ) : (
-                    <><Send className="w-4 h-4" /> Dispatch Broadcast</>
+                    <><Send className="w-4 h-4" /> {t('msg_dispatch')}</>
                   )}
                 </button>
               </div>

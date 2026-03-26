@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { useLanguage } from '../context/LanguageContext';
+import { translations } from '../lib/i18n';
 import { 
   Send, 
   ChevronDown, 
@@ -34,6 +36,9 @@ interface Student {
 }
 
 export default function AdminAssessments() {
+  const { language } = useLanguage();
+  const t = (key: keyof typeof translations.en) => translations[language][key];
+
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
@@ -127,7 +132,7 @@ export default function AdminAssessments() {
     return (
       <div className="flex flex-col items-center justify-center h-64 space-y-4">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
-        <p className="text-gray-500 font-medium">Loading assessments...</p>
+        <p className="text-gray-500 font-medium">{t('asm_loading')}</p>
       </div>
     );
   }
@@ -139,16 +144,16 @@ export default function AdminAssessments() {
         <div>
           <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
             <FileText className="w-6 h-6 text-violet-500" />
-            Assessments History
+            {t('asm_historyTitle')}
           </h2>
-          <p className="text-sm text-gray-500 mt-1">Review student performance and publish new marks</p>
+          <p className="text-sm text-gray-500 mt-1">{t('asm_historyDesc')}</p>
         </div>
         <button 
           onClick={() => setShowPublishDialog(true)}
           className="flex items-center justify-center gap-2 px-6 py-3 bg-violet-600 text-white rounded-xl font-bold text-sm hover:bg-violet-700 transition-all shadow-lg shadow-violet-100 shrink-0"
         >
           <Plus className="w-4 h-4" />
-          Publish New Assessment
+          {t('asm_publishBtn')}
         </button>
       </div>
 
@@ -158,21 +163,21 @@ export default function AdminAssessments() {
             <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm">
               <Send className="w-8 h-8 text-gray-300" />
             </div>
-            <h3 className="text-lg font-bold text-gray-800">No assessments published yet</h3>
+            <h3 className="text-lg font-bold text-gray-800">{t('asm_noAssessmentsTitle')}</h3>
             <p className="text-gray-500 text-sm max-w-sm mx-auto mt-2 leading-relaxed">
-              Tracking student progress is essential. Create your first assessment to distribute grades and provide feedback to your groups.
+              {t('asm_noAssessmentsDesc')}
             </p>
             <button 
               onClick={() => setShowPublishDialog(true)}
               className="mt-8 flex items-center gap-2 px-8 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold text-sm hover:border-violet-500 hover:text-violet-600 transition-all shadow-sm"
             >
               <Plus className="w-4 h-4" />
-              Get Started
+              {t('asm_getStartedBtn')}
             </button>
           </div>
         ) : (
           assessments.map((assessment) => {
-            const groupName = groups.find(g => g.id === assessment.group_ids[0])?.name || 'Deleted Group';
+            const groupName = groups.find(g => g.id === assessment.group_ids[0])?.name || t('asm_deletedGroup');
             const isExpanded = expandedId === assessment.id;
 
             return (
@@ -199,7 +204,7 @@ export default function AdminAssessments() {
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="hidden sm:inline-block text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 px-2 py-0.5 rounded">
-                      Max Mark: {assessment.maximum_mark}
+                      {t('asm_maxMark')} {assessment.maximum_mark}
                     </span>
                     <div className={`p-2 rounded-lg transition-colors ${isExpanded ? 'bg-violet-50 text-violet-600' : 'text-gray-400'}`}>
                       {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
@@ -211,24 +216,24 @@ export default function AdminAssessments() {
                   <div className="px-5 pb-6 pt-2 border-t border-gray-50 bg-gray-50/30 rounded-b-2xl animate-in slide-in-from-top-2">
                     <div className="mb-6 mt-4">
                       <h5 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-                        <MessageSquare className="w-3.5 h-3.5" /> Comment
+                        <MessageSquare className="w-3.5 h-3.5" /> {t('asm_commentTitle')}
                       </h5>
                       <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-sm text-gray-700 leading-relaxed">
-                        {assessment.comment || <span className="text-gray-400 italic">No comment provided</span>}
+                        {assessment.comment || <span className="text-gray-400 italic">{t('asm_noComment')}</span>}
                       </div>
                     </div>
 
                     <div>
                       <h5 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-                        <Users className="w-3.5 h-3.5" /> Student Results
+                        <Users className="w-3.5 h-3.5" /> {t('asm_studentResultsTitle')}
                       </h5>
                       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                         <table className="w-full text-sm">
                           <thead className="bg-gray-50 border-b border-gray-50">
                             <tr>
-                              <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase">Student Name</th>
-                              <th className="text-right py-3 px-4 text-xs font-bold text-gray-500 uppercase">Mark</th>
-                              <th className="text-right py-3 px-4 text-xs font-bold text-gray-500 uppercase">Percentage</th>
+                              <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase">{t('asm_thStudentName')}</th>
+                              <th className="text-right py-3 px-4 text-xs font-bold text-gray-500 uppercase">{t('asm_thMark')}</th>
+                              <th className="text-right py-3 px-4 text-xs font-bold text-gray-500 uppercase">{t('asm_thPercentage')}</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-gray-50">
@@ -239,7 +244,7 @@ export default function AdminAssessments() {
                               return (
                                 <tr key={studentId} className="hover:bg-gray-50/50 transition-colors">
                                   <td className="py-3 px-4 font-medium text-gray-800">
-                                    {student ? `${student.first_name} ${student.last_name}` : 'Unknown Student'}
+                                    {student ? `${student.first_name} ${student.last_name}` : t('asm_unknownStudent')}
                                   </td>
                                   <td className="py-3 px-4 text-right font-bold text-gray-900">
                                     {mark} <span className="text-gray-400 font-normal">/ {assessment.maximum_mark}</span>
@@ -275,7 +280,7 @@ export default function AdminAssessments() {
           <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95">
             <form onSubmit={handlePublish} className="flex flex-col max-h-[90vh]">
               <div className="p-6 border-b border-gray-100 flex items-center justify-between shrink-0">
-                <h3 className="text-xl font-bold text-gray-900">Publish New Assessment</h3>
+                <h3 className="text-xl font-bold text-gray-900">{t('asm_publishDialogTitle')}</h3>
                 <button type="button" onClick={() => setShowPublishDialog(false)} className="p-2 hover:bg-gray-100 rounded-full text-gray-400">
                   <X className="w-6 h-6" />
                 </button>
@@ -284,7 +289,7 @@ export default function AdminAssessments() {
               <div className="p-6 overflow-y-auto space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Target Group</label>
+                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">{t('asm_targetGroup')}</label>
                     <select 
                       value={selectedGroupId}
                       onChange={(e) => {
@@ -294,12 +299,12 @@ export default function AdminAssessments() {
                       className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500"
                       required
                     >
-                      <option value="">Select a group...</option>
+                      <option value="">{t('asm_selectGroup')}</option>
                       {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Maximum Mark</label>
+                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">{t('asm_maximumMark')}</label>
                     <input 
                       type="number" 
                       value={maxMark}
@@ -312,11 +317,11 @@ export default function AdminAssessments() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Commentary (Optional)</label>
+                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">{t('asm_commentOptional')}</label>
                   <textarea 
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
-                    placeholder="Describe the assessment topic, difficulty, or general observations..."
+                    placeholder={t('asm_commentPlaceholder')}
                     rows={3}
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500 resize-none"
                   />
@@ -325,11 +330,11 @@ export default function AdminAssessments() {
                 {selectedGroupId && (
                   <div className="space-y-4">
                     <h4 className="text-xs font-bold text-gray-900 uppercase tracking-widest flex items-center gap-2">
-                       Enter Marks <span className="normal-case font-medium text-gray-400">({activeGroupStudents.length} Students)</span>
+                       {t('asm_enterMarks')} <span className="normal-case font-medium text-gray-400">({activeGroupStudents.length} {t('asm_studentsCount')})</span>
                     </h4>
                     <div className="bg-gray-50 rounded-2xl border border-gray-100 p-4 space-y-3">
                       {activeGroupStudents.length === 0 ? (
-                        <div className="text-center py-4 text-sm text-gray-500 italic">No students enrolled in this group.</div>
+                        <div className="text-center py-4 text-sm text-gray-500 italic">{t('asm_noStudentsEnrolled')}</div>
                       ) : (
                         activeGroupStudents.map(student => (
                           <div key={student.id} className="flex items-center justify-between gap-4 bg-white p-3 rounded-xl border border-gray-100 whitespace-nowrap">
@@ -364,7 +369,7 @@ export default function AdminAssessments() {
                   disabled={isSubmitting || !selectedGroupId}
                   className="w-full py-4 bg-violet-600 text-white rounded-2xl font-bold text-base hover:bg-violet-700 transition-all shadow-xl shadow-violet-100 disabled:opacity-50 disabled:shadow-none flex items-center justify-center gap-2"
                 >
-                  {isSubmitting ? 'Publishing...' : <><Send className="w-5 h-5" /> Publish Results</>}
+                  {isSubmitting ? t('asm_publishingBtn') : <><Send className="w-5 h-5" /> {t('asm_publishResultsBtn')}</>}
                 </button>
               </div>
             </form>
