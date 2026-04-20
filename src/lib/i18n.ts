@@ -44,6 +44,15 @@ export const translations = {
     subjectPEDesc: 'Sports, Fitness, and Wellness Programs',
     subjectCS: 'Computer Science',
     subjectCSDesc: 'Programming, Web Development, and IT Skills',
+    ourTeachers: 'Our Teachers',
+    teacherAge: 'Age',
+    teacherExperience: 'Experience',
+    teacherEducation: 'Education',
+    teacherAchievements: 'Achievements',
+    previousSubject: 'Previous Subject',
+    nextSubject: 'Next Subject',
+    showInfo: 'Show Info',
+    showVideo: 'Show Video',
 
     // Application Form
     applicationFormTitle: 'Application Form',
@@ -393,6 +402,15 @@ export const translations = {
     subjectPEDesc: 'Sport, Jismoniy Mashq va Sog\'liqni Saqlash Dasturlari',
     subjectCS: 'Informatika',
     subjectCSDesc: 'Dasturlash, Veb Ishlab Chiqish va IT Ko\'nikmalari',
+    ourTeachers: 'Bizning O\'qituvchilarimiz',
+    teacherAge: 'Yoshi',
+    teacherExperience: 'Tajribasi',
+    teacherEducation: 'Ma\'lumoti',
+    teacherAchievements: 'Yutuqlari',
+    previousSubject: 'Oldingi fan',
+    nextSubject: 'Keyingi fan',
+    showInfo: 'Ma\'lumotni ko\'rsatish',
+    showVideo: 'Videoni ko\'rsatish',
 
     // Application Form
     applicationFormTitle: 'Ariza Shakli',
@@ -742,6 +760,15 @@ export const translations = {
     subjectPEDesc: 'Спорт, Фитнес и Программы здоровья',
     subjectCS: 'Информатика',
     subjectCSDesc: 'Программирование, Веб-разработка и ИТ-навыки',
+    ourTeachers: 'Наши Учителя',
+    teacherAge: 'Возраст',
+    teacherExperience: 'Опыт работы',
+    teacherEducation: 'Образование',
+    teacherAchievements: 'Достижения',
+    previousSubject: 'Предыдущий предмет',
+    nextSubject: 'Следующий предмет',
+    showInfo: 'Показать информацию',
+    showVideo: 'Показать видео',
 
     // Application Form
     applicationFormTitle: 'Форма Заявки',
