@@ -8,6 +8,7 @@ import {
   Briefcase,
   GraduationCap,
   Award,
+  Play,
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { TranslationKey } from '../lib/i18n';
@@ -33,7 +34,7 @@ const subjectsData: SubjectDetail[] = [
     id: 'math',
     nameKey: 'subjectMath',
     descKey: 'subjectMathDesc',
-    videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    videoUrl: '/math.mp4',
     teachers: [
       {
         name: 'Dr. Alan Turing',
@@ -55,7 +56,7 @@ const subjectsData: SubjectDetail[] = [
     id: 'physics',
     nameKey: 'subjectPhysics',
     descKey: 'subjectPhysicsDesc',
-    videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+    videoUrl: '/physics.mp4',
     teachers: [
       {
         name: 'Marie Curie',
@@ -67,17 +68,47 @@ const subjectsData: SubjectDetail[] = [
     ]
   },
   {
-    id: 'biology',
-    nameKey: 'subjectBiology',
-    descKey: 'subjectBiologyDesc',
-    videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+    id: 'english',
+    nameKey: 'subjectEnglish',
+    descKey: 'subjectEnglishDesc',
+    videoUrl: '/english.mp4',
     teachers: [
       {
-        name: 'Charles Darwin',
-        age: 60,
+        name: 'Jane Austen',
+        age: 42,
+        experience: '15 years',
+        education: 'M.A. in English Literature, Oxford',
+        achievements: 'Author of "Modern Grammar", Creative Writing Workshop Lead'
+      }
+    ]
+  },
+  {
+    id: 'history',
+    nameKey: 'subjectHistory',
+    descKey: 'subjectHistoryDesc',
+    videoUrl: '/history.mp4',
+    teachers: [
+      {
+        name: 'Herodotus',
+        age: 55,
         experience: '30 years',
-        education: 'B.A. Sciences, Cambridge',
-        achievements: 'Author of Advanced Biology textbook, Biology Society President'
+        education: 'Ph.D. in Ancient History',
+        achievements: 'Archaeological expedition leader, Historical Society Fellow'
+      }
+    ]
+  },
+  {
+    id: 'it',
+    nameKey: 'subjectIT',
+    descKey: 'subjectITDesc',
+    videoUrl: '/IT.mp4',
+    teachers: [
+      {
+        name: 'Ada Lovelace',
+        age: 35,
+        experience: '10 years',
+        education: 'M.Sc. in Computer Science, Stanford',
+        achievements: 'Full-stack developer, Robotics club mentor'
       }
     ]
   }
@@ -87,6 +118,8 @@ export default function Subjects() {
   const { t } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [mobileView, setMobileView] = useState<'video' | 'info'>('video');
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [subjects, setSubjects] = useState<SubjectDetail[]>(subjectsData);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -95,20 +128,56 @@ export default function Subjects() {
   const minSwipeDistance = 50;
 
   useEffect(() => {
+    fetch('/teachers.json')
+      .then(res => res.json())
+      .then(data => {
+        if (data.subjects) {
+          const updatedSubjects = subjectsData.map(subject => {
+            const teacherInfo = data.subjects.find((s: any) => s.id === subject.id);
+            if (teacherInfo) {
+              return { ...subject, teachers: teacherInfo.teachers };
+            }
+            return subject;
+          });
+          setSubjects(updatedSubjects);
+        }
+      })
+      .catch(err => console.error('Error loading teacher data:', err));
+  }, []);
+
+  useEffect(() => {
     if (videoRef.current) {
       videoRef.current.load();
-      videoRef.current.play().catch(e => console.log('Autoplay prevented', e));
+      videoRef.current.play().then(() => {
+        setIsPlaying(true);
+      }).catch(err => {
+        console.log("Autoplay blocked:", err);
+        setIsPlaying(false);
+      });
     }
-  }, [currentIndex, mobileView]);
+  }, [currentIndex]);
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
 
   const nextSubject = () => {
-    setCurrentIndex((prev) => (prev === subjectsData.length - 1 ? 0 : prev + 1));
+    setCurrentIndex((prev) => (prev === subjects.length - 1 ? 0 : prev + 1));
     setMobileView('video');
+    setIsPlaying(false);
   };
 
   const prevSubject = () => {
-    setCurrentIndex((prev) => (prev === 0 ? subjectsData.length - 1 : prev - 1));
+    setCurrentIndex((prev) => (prev === 0 ? subjects.length - 1 : prev - 1));
     setMobileView('video');
+    setIsPlaying(false);
   };
 
   const onTouchStart = (e: React.TouchEvent) => {
@@ -133,10 +202,10 @@ export default function Subjects() {
     }
   };
 
-  const activeSubject = subjectsData[currentIndex];
+  const activeSubject = subjects[currentIndex];
 
   return (
-    <section className="py-20 bg-gray-50 overflow-hidden">
+    <section className="py-20 bg-gray-50 overflow-hidden" id="subjects">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
@@ -167,28 +236,46 @@ export default function Subjects() {
             >
               <div className="flex flex-col md:flex-row h-[85vh] max-h-[800px] md:h-[600px]">
                  {/* Video Section */}
-                 <div className={`relative w-full md:w-5/12 h-full bg-black flex-shrink-0 ${mobileView === 'info' ? 'hidden md:block' : 'block'}`}>
+                 <div 
+                   className={`relative w-full md:w-5/12 h-full bg-black flex-shrink-0 cursor-pointer group ${mobileView === 'info' ? 'hidden md:block' : 'block'}`}
+                   onClick={togglePlay}
+                 >
                    <video 
                      ref={videoRef}
+                     key={activeSubject.videoUrl}
                      src={activeSubject.videoUrl} 
-                     className="w-full h-full object-cover opacity-90"
-                     autoPlay
-                     muted
+                     className="w-full h-full object-cover"
                      playsInline
-                     onEnded={() => setMobileView('info')}
+                     onEnded={() => setIsPlaying(false)}
+                     onPlay={() => setIsPlaying(true)}
+                     onPause={() => setIsPlaying(false)}
                    />
+                   
+                   {/* Play Button Overlay */}
+                   {!isPlaying && (
+                     <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
+                       <div className="w-20 h-20 flex items-center justify-center rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white shadow-xl transform group-hover:scale-110 transition-transform">
+                         <Play className="w-10 h-10 fill-current ml-1" />
+                       </div>
+                     </div>
+                   )}
+
                    {/* Mobile Toggle Icon */}
                    <button 
-                     onClick={() => setMobileView('info')} 
+                     onClick={(e) => {
+                       e.stopPropagation();
+                       setMobileView('info');
+                     }} 
                      className="md:hidden absolute top-4 right-4 p-3 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 z-10 transition-colors"
                      aria-label={t('showInfo')}
                    >
                      <Info className="w-6 h-6" />
                    </button>
+
                    {/* Subject overlay on video for mobile */}
-                   <div className="md:hidden absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
+                   <div className="md:hidden absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none">
                       <h3 className="text-2xl font-bold text-white mb-2">{t(activeSubject.nameKey)}</h3>
-                      <p className="text-white/80 line-clamp-2">{t(activeSubject.descKey)}</p>
+                      <p className="text-white/90 line-clamp-2 text-sm">{t(activeSubject.descKey)}</p>
                    </div>
                  </div>
 
@@ -218,7 +305,7 @@ export default function Subjects() {
                        {activeSubject.teachers.map((teacher, idx) => (
                          <div key={idx} className="bg-gray-50 p-6 rounded-2xl border border-gray-100 hover:border-blue-200 transition-colors">
                             <div className="flex items-center gap-4 mb-5">
-                              <div className="p-3 bg-white text-blue-600 rounded-xl shadow-sm">
+                              <div className="p-3 bg-white text-blue-600 rounded-xl shadow-sm border border-gray-100">
                                 <User className="w-7 h-7" />
                               </div>
                               <div>
@@ -262,12 +349,13 @@ export default function Subjects() {
 
           {/* Dots Indicator */}
           <div className="flex justify-center mt-8 gap-3">
-            {subjectsData.map((_, idx) => (
+            {subjects.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => {
                   setCurrentIndex(idx);
                   setMobileView('video');
+                  setIsPlaying(false);
                 }}
                 className={`w-3 h-3 rounded-full transition-all duration-300 ${
                   idx === currentIndex 

@@ -1,0 +1,78 @@
+{
+  "subjects": [
+    {
+      "id": "math",
+      "teachers": [
+        {
+          "name": "Islomjon keldiboyev",
+          "age": 29,
+          "experience": "6 years",
+          "education": "Bachelor in Kokand Pedagogic university",
+          "achievements": "National Math Certificate score of 100, Attestated as highest category educator"
+        },
+        {
+          "name": "Elmurod TTurdiyev",
+          "age": 31,
+          "experience": "8 years",
+          "education": "Bachelor in It, TITU",
+          "achievements": "National Math Certificate score of 100, Several times winner of National Math Olympiads"
+        }
+      ]
+    },
+    {
+      "id": "physics",
+      "teachers": [
+        {
+          "name": "Shoxruh Niyozov",
+          "age": 40,
+          "experience": "10 years",
+          "education": "Masters in Physics",
+          "achievements": "National Physics Certificate score of 90, Attestated as highest category educator"
+        },
+        {
+          "name": "Doniyor Xalimov",
+          "age": 23,
+          "experience": "4 years",
+          "education": "Bachelor in IT, TITU",
+          "achievements": "Won Golden Ball in PES 2019"
+        }
+      ]
+    },
+    {
+      "id": "english",
+      "teachers": [
+        {
+          "name": "Abbos Domla",
+          "age": 28,
+          "experience": "6",
+          "education": "Bachelor",
+          "achievements": "Author of \"Modern Grammar\", Creative Writing Workshop Lead"
+        }
+      ]
+    },
+    {
+      "id": "history",
+      "teachers": [
+        {
+          "name": "Mansur Domla",
+          "age": 55,
+          "experience": "30 years",
+          "education": "Ph.D. in Ancient History",
+          "achievements": "Archaeological expedition leader, Historical Society Fellow"
+        }
+      ]
+    },
+    {
+      "id": "it",
+      "teachers": [
+        {
+          "name": "Ada Lovelace",
+          "age": 35,
+          "experience": "10 years",
+          "education": "M.Sc. in Computer Science, Stanford",
+          "achievements": "Full-stack developer, Robotics club mentor"
+        }
+      ]
+    }
+  ]
+}
