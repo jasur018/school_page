@@ -30,6 +30,7 @@ interface TimetableEntry {
   time_slot: string;
   room: string;
   group_ids: string[];
+  week_start: string;
 }
 
 interface AssessmentEntry {
@@ -107,14 +108,23 @@ export default function StudentDashboard() {
 
     setDataLoading(true);
     try {
-      // 1. Fetch Timetable for student's groups
+      // 1. Fetch Timetable for student's groups (current week only)
       let timetableData: TimetableEntry[] = [];
       if (student.attending_groups && student.attending_groups.length > 0) {
-        // Fetch timetable rows where group_ids array overlaps with the student's attending groups
+        // Compute this week's Monday as an ISO date string (YYYY-MM-DD)
+        const now = new Date();
+        const jsDow = now.getDay(); // 0=Sun
+        const diffToMonday = jsDow === 0 ? -6 : 1 - jsDow;
+        const monday = new Date(now);
+        monday.setDate(now.getDate() + diffToMonday);
+        monday.setHours(0, 0, 0, 0);
+        const weekStartStr = monday.toISOString().split('T')[0]; // "YYYY-MM-DD"
+
         const { data: ttData, error: ttError } = await supabase
           .from('timetable')
           .select('*')
           .overlaps('group_ids', student.attending_groups)
+          .eq('week_start', weekStartStr)
           .order('day_of_week', { ascending: true })
           .order('time_slot', { ascending: true });
         
@@ -362,7 +372,7 @@ export default function StudentDashboard() {
                       <p className="text-sm text-gray-400 mt-1">If this is a mistake, contact administration.</p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                       {(() => {
                         const now = new Date();
                         const jsDow = now.getDay(); // 0=Sun
@@ -376,19 +386,11 @@ export default function StudentDashboard() {
                         monday.setHours(0, 0, 0, 0);
 
                         const dayColumns = [1, 2, 3, 4, 5, 6, 7].map(dayFormat => {
-                          // Skip days entirely before today
-                          if (dayFormat < todayDow) return null;
-
-                          let dayEntries = timetable.filter(t => t.day_of_week === dayFormat);
+                          const dayEntries = timetable.filter(e => e.day_of_week === dayFormat);
                           if (dayEntries.length === 0) return null;
 
-                          // For today: filter out time slots that have already passed
-                          if (dayFormat === todayDow) {
-                            dayEntries = dayEntries.filter(t => t.time_slot.substring(0, 5) >= currentTime);
-                            if (dayEntries.length === 0) return null;
-                          }
-
                           const isToday = dayFormat === todayDow;
+                          const isPast = dayFormat < todayDow;
 
                           // Compute actual calendar date for this day (Monday + offset)
                           const dayDate = new Date(monday);
@@ -400,35 +402,49 @@ export default function StudentDashboard() {
                           });
 
                           return (
-                            <div key={dayFormat} className={`rounded-2xl p-5 border ${isToday ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-100' : 'bg-gray-50 border-gray-100'}`}>
-                              <div className="border-b border-gray-200 pb-3 mb-4 flex items-center justify-between">
-                                <div className="flex flex-col">
-                                  <span className="font-bold text-gray-900 uppercase tracking-wider text-sm flex items-center gap-2">
-                                    {dateLabel}
-                                    {isToday && (
-                                      <span className="bg-blue-600 text-white text-[9px] font-bold py-0.5 px-2 rounded-full uppercase tracking-widest">Today</span>
-                                    )}
-                                  </span>
-                                </div>
-                                <span className={`text-xs py-0.5 px-2.5 rounded-full shrink-0 ${isToday ? 'bg-blue-200 text-blue-800' : 'bg-blue-100 text-blue-700'}`}>
-                                  {dayEntries.length} classes
+                            <div
+                              key={dayFormat}
+                              className={`rounded-2xl p-4 border transition-all ${
+                                isToday
+                                  ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-100'
+                                  : isPast
+                                  ? 'bg-gray-50/60 border-gray-100 opacity-60'
+                                  : 'bg-gray-50 border-gray-100'
+                              }`}
+                            >
+                              <div className="border-b border-gray-200 pb-3 mb-3 flex items-center justify-between gap-2">
+                                <span className="font-bold text-gray-900 uppercase tracking-wide text-xs sm:text-sm flex items-center gap-1.5 flex-wrap">
+                                  {dateLabel}
+                                  {isToday && (
+                                    <span className="bg-blue-600 text-white text-[9px] font-bold py-0.5 px-2 rounded-full uppercase tracking-widest">
+                                      Today
+                                    </span>
+                                  )}
+                                </span>
+                                <span className={`text-xs py-0.5 px-2 rounded-full shrink-0 ${isToday ? 'bg-blue-200 text-blue-800' : 'bg-blue-100 text-blue-700'}`}>
+                                  {dayEntries.length}
                                 </span>
                               </div>
-                              <div className="space-y-3">
+                              <div className="space-y-2">
                                 {dayEntries.map(entry => {
+                                  const entryTime = entry.time_slot.substring(0, 5);
+                                  const isPassedSlot = isToday && entryTime < currentTime;
                                   const relevantGroupId = entry.group_ids.find(gid => selectedStudent?.attending_groups.includes(gid)) || entry.group_ids[0];
                                   return (
-                                    <div key={entry.id} className="bg-white p-3.5 rounded-xl border border-gray-200 shadow-sm flex gap-4">
-                                      <div className="flex flex-col items-center justify-center border-r border-gray-100 pr-4 w-16 shrink-0">
-                                        <span className="text-sm font-bold text-gray-900 leading-none tabular-nums">
-                                          {entry.time_slot.substring(0, 5)}
+                                    <div
+                                      key={entry.id}
+                                      className={`bg-white p-3 rounded-xl border shadow-sm flex gap-3 transition-opacity ${isPassedSlot || isPast ? 'opacity-50' : ''}`}
+                                    >
+                                      <div className="flex flex-col items-center justify-center border-r border-gray-100 pr-3 w-14 shrink-0">
+                                        <span className="text-xs font-bold text-gray-900 leading-none tabular-nums">
+                                          {entryTime}
                                         </span>
                                       </div>
                                       <div className="flex flex-col justify-center min-w-0">
-                                        <span className="font-bold text-gray-900 text-sm truncate">
+                                        <span className="font-bold text-gray-900 text-xs truncate">
                                           {getGroupName(relevantGroupId)}
                                         </span>
-                                        <span className="text-xs text-blue-600 font-semibold mt-0.5">
+                                        <span className="text-[11px] text-blue-600 font-semibold mt-0.5">
                                           Room {entry.room}
                                         </span>
                                       </div>
@@ -444,7 +460,7 @@ export default function StudentDashboard() {
                         if (!hasVisible) {
                           return (
                             <div className="col-span-full flex flex-col items-center justify-center py-12 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50">
-                              <p className="text-gray-500 font-medium">No upcoming classes this week.</p>
+                              <p className="text-gray-500 font-medium">No classes scheduled this week.</p>
                               <p className="text-sm text-gray-400 mt-1">Check back on Monday for next week's schedule.</p>
                             </div>
                           );

@@ -14,10 +14,24 @@ create table public.profiles (
 -- Enable RLS on profiles
 alter table public.profiles enable row level security;
 
+-- Use JWT metadata for admin checks so RLS does not recurse back into profiles.
+create or replace function public.is_admin()
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select coalesce(auth.jwt() -> 'user_metadata' ->> 'role', '') = 'admin';
+$$;
+
 -- Users can read their own profile (sufficient for login flow)
 create policy "Users can view own profile"
   on public.profiles for select
-  using (auth.uid() = id);
+  using (id = (select auth.uid()));
+
+create policy "Admins can view all profiles safely"
+  on public.profiles for select
+  using (public.is_admin());
 -- NOTE: The previous "Admins can view all profiles" policy was removed.
 -- It caused infinite recursion (querying profiles inside a policy ON profiles → 500 error).
 -- Admins viewing all profiles will be handled via a security-definer function in the future.
@@ -47,22 +61,11 @@ create policy "Anyone can insert an application"
 -- Allow only authenticated admins to view/update applications
 create policy "Only admins can view applications"
   on public.applications for select
-  using (
-    -- This checks if the user's role in the profiles table is 'admin'
-    exists (
-      select 1 from public.profiles
-      where profiles.id = auth.uid() and profiles.role = 'admin'
-    )
-  );
+  using (public.is_admin());
 
 create policy "Only admins can update applications"
   on public.applications for update
-  using (
-    exists (
-      select 1 from public.profiles
-      where profiles.id = auth.uid() and profiles.role = 'admin'
-    )
-  );
+  using (public.is_admin());
 
 
 -- 3. Automatically create a profile when an admin provisions a new user
@@ -97,17 +100,20 @@ alter table public.groups enable row level security;
 -- All authenticated users (students + admins) can view groups
 create policy "Authenticated users can view groups"
   on public.groups for select
-  using (auth.uid() is not null);
+  using ((select auth.uid()) is not null);
 
 -- Only admins can insert/update/delete groups
-create policy "Admins can manage groups"
-  on public.groups for all
-  using (
-    exists (
-      select 1 from public.profiles
-      where profiles.id = auth.uid() and profiles.role = 'admin'
-    )
-  );
+create policy "Admins can insert groups"
+  on public.groups for insert
+  with check (public.is_admin());
+
+create policy "Admins can update groups"
+  on public.groups for update
+  using (public.is_admin());
+
+create policy "Admins can delete groups"
+  on public.groups for delete
+  using (public.is_admin());
 
 -- 5. Create Timetable table
 create table public.timetable (
@@ -125,17 +131,20 @@ alter table public.timetable enable row level security;
 -- All authenticated users can view the timetable
 create policy "Authenticated users can view timetable"
   on public.timetable for select
-  using (auth.uid() is not null);
+  using ((select auth.uid()) is not null);
 
 -- Only admins can modify the timetable
-create policy "Admins can manage timetable"
-  on public.timetable for all
-  using (
-    exists (
-      select 1 from public.profiles
-      where profiles.id = auth.uid() and profiles.role = 'admin'
-    )
-  );
+create policy "Admins can insert timetable"
+  on public.timetable for insert
+  with check (public.is_admin());
+
+create policy "Admins can update timetable"
+  on public.timetable for update
+  using (public.is_admin());
+
+create policy "Admins can delete timetable"
+  on public.timetable for delete
+  using (public.is_admin());
 
 -- 6. Create Assessments table
 create table public.assessments (
@@ -153,17 +162,20 @@ alter table public.assessments enable row level security;
 -- All authenticated users can view assessments
 create policy "Authenticated users can view assessments"
   on public.assessments for select
-  using (auth.uid() is not null);
+  using ((select auth.uid()) is not null);
 
 -- Only admins can manage assessments
-create policy "Admins can manage assessments"
-  on public.assessments for all
-  using (
-    exists (
-      select 1 from public.profiles
-      where profiles.id = auth.uid() and profiles.role = 'admin'
-    )
-  );
+create policy "Admins can insert assessments"
+  on public.assessments for insert
+  with check (public.is_admin());
+
+create policy "Admins can update assessments"
+  on public.assessments for update
+  using (public.is_admin());
+
+create policy "Admins can delete assessments"
+  on public.assessments for delete
+  using (public.is_admin());
 
 -- 7. Create Messages table
 create table public.messages (
@@ -180,9 +192,37 @@ alter table public.messages enable row level security;
 -- Users can see messages they sent or received
 create policy "Users can view own messages"
   on public.messages for select
-  using (auth.uid() = sender_id or auth.uid() = receiver_id);
+  using (sender_id = (select auth.uid()) or receiver_id = (select auth.uid()));
 
 -- Authenticated users can send messages
 create policy "Authenticated users can send messages"
   on public.messages for insert
-  with check (auth.uid() = sender_id);
+  with check (sender_id = (select auth.uid()));
+
+-- Supporting indexes for the most common filters and joins.
+create index if not exists applications_status_created_at_idx
+  on public.applications (status, created_at desc);
+
+create index if not exists applications_created_at_idx
+  on public.applications (created_at desc);
+
+create index if not exists messages_sender_id_idx
+  on public.messages (sender_id);
+
+create index if not exists messages_receiver_id_idx
+  on public.messages (receiver_id);
+
+create index if not exists students_profile_id_idx
+  on public.students (profile_id);
+
+create index if not exists groups_responsible_teachers_idx
+  on public.groups using gin (responsible_teachers);
+
+create index if not exists assessments_teacher_ids_idx
+  on public.assessments using gin (teacher_ids);
+
+create index if not exists assessments_group_ids_idx
+  on public.assessments using gin (group_ids);
+
+create index if not exists assessments_results_idx
+  on public.assessments using gin (results);

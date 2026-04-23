@@ -27,7 +27,7 @@ export const translations = {
     ourCurriculum: 'Our Curriculum',
     curriculumDesc: 'Comprehensive subjects designed to prepare students for higher education and professional success',
     subjectMath: 'Mathematics',
-    subjectMathDesc: 'Algebra, Geometry, Calculus, and Statistics',
+    subjectMathDesc: 'Algebra, Geometry, Calculus, and Probability Theory',
     subjectPhysics: 'Physics',
     subjectPhysicsDesc: 'Mechanics, Electricity, Waves, and Modern Physics',
     subjectChemistry: 'Chemistry',
@@ -71,7 +71,7 @@ export const translations = {
     emailPlaceholder: 'Enter email address',
     phoneNumber: 'Phone Number *',
     phonePlaceholder: 'Enter phone number',
-    gradeLevel: 'Grade Level *',
+    gradeLevel: 'Grade *',
     additionalMessage: 'Additional Message (Optional)',
     messagePlaceholder: 'Tell us about your academic interests or achievements',
     submitApplication: 'Submit Application',
@@ -84,7 +84,7 @@ export const translations = {
     workingHours: 'Working Hours',
     weekdays: 'Monday - Friday',
     hours: '8:00 AM - 4:00 PM',
-    copyright: '© 2024 Ar-Roshidoniy High School. All rights reserved.',
+    copyright: '© 2026 Ar-Roshidoniy High School. All rights reserved.',
 
     // Login Page
     welcomeBack: 'Welcome Back',
@@ -306,6 +306,11 @@ export const translations = {
     tt_sat: 'Sat',
     tt_sun: 'Sun',
     tt_outdoor: 'Outdoor',
+    tt_copyToNextWeek: 'Copy to Next Week',
+    tt_copying: 'Copying...',
+    tt_copyReplaceTitle: 'Replace Next Week?',
+    tt_copyReplaceDesc: 'Next week already has {count} entries. They will be deleted and replaced with this week\'s schedule. Continue?',
+    tt_copyReplace: 'Yes, Replace',
 
     // Assessments
     asm_loading: 'Loading assessments...',
@@ -389,7 +394,7 @@ export const translations = {
     ourCurriculum: 'Bizning O\'quv Dasturimiz',
     curriculumDesc: 'O\'quvchilarni oliy ta\'lim va kasbiy muvaffaqiyatga tayyorlash uchun mo\'ljallangan fanlar',
     subjectMath: 'Matematika',
-    subjectMathDesc: 'Algebra, Geometriya, Kalkulyatsiya va Statistika',
+    subjectMathDesc: 'Algebra, Geometriya, Hisob va Ehtimollar Nazariyasi',
     subjectPhysics: 'Fizika',
     subjectPhysicsDesc: 'Mexanika, Elektr, To\'lqinlar va Zamonaviy Fizika',
     subjectChemistry: 'Kimyo',
@@ -433,7 +438,7 @@ export const translations = {
     emailPlaceholder: 'Elektron pochta manzilini kiriting',
     phoneNumber: 'Telefon Raqami *',
     phonePlaceholder: 'Telefon raqamini kiriting',
-    gradeLevel: 'Sinf Darajasi *',
+    gradeLevel: 'Sinf*',
     additionalMessage: 'Qo\'shimcha Xabar (Ixtiyoriy)',
     messagePlaceholder: 'Akademik qiziqishlaringiz yoki yutuqlaringiz haqida yozing',
     submitApplication: 'Ariza Yuborish',
@@ -446,7 +451,7 @@ export const translations = {
     workingHours: 'Ish Vaqti',
     weekdays: 'Dushanba - Juma',
     hours: '8:00 - 16:00',
-    copyright: '© 2024 Ar-Roshidoniy O\'rta Maktabi. Barcha huquqlar himoyalangan.',
+    copyright: '© 2026 Ar-Roshidoniy O\'rta Maktabi. Barcha huquqlar himoyalangan.',
 
     // Login Page
     welcomeBack: 'Xush Kelibsiz',
@@ -668,6 +673,11 @@ export const translations = {
     tt_sat: 'Shan',
     tt_sun: 'Yak',
     tt_outdoor: 'Ochiq havo',
+    tt_copyToNextWeek: 'Keyingi haftaga ko\'chirish',
+    tt_copying: 'Ko\'chirilmoqda...',
+    tt_copyReplaceTitle: 'Keyingi haftani almashtirish?',
+    tt_copyReplaceDesc: 'Keyingi haftada allaqachon {count} ta yozuv bor. Ular o\'chiriladi va ushbu hafta jadvali bilan almashtiriladi. Davom etasizmi?',
+    tt_copyReplace: 'Ha, almashtirish',
 
     // Assessments
     asm_loading: 'Baholar yuklanmoqda...',
@@ -751,7 +761,7 @@ export const translations = {
     ourCurriculum: 'Наша Учебная Программа',
     curriculumDesc: 'Комплексные предметы, разработанные для подготовки учащихся к высшему образованию и профессиональному успеху',
     subjectMath: 'Математика',
-    subjectMathDesc: 'Алгебра, Геометрия, Математический анализ и Статистика',
+    subjectMathDesc: 'Алгебра, Геометрия, Математический анализ и Теория вероятностей',
     subjectPhysics: 'Физика',
     subjectPhysicsDesc: 'Механика, Электричество, Волны и Современная физика',
     subjectChemistry: 'Химия',
@@ -795,7 +805,7 @@ export const translations = {
     emailPlaceholder: 'Введите адрес электронной почты',
     phoneNumber: 'Номер Телефона *',
     phonePlaceholder: 'Введите номер телефона',
-    gradeLevel: 'Уровень Класса *',
+    gradeLevel: 'Класс *',
     additionalMessage: 'Дополнительное Сообщение (Необязательно)',
     messagePlaceholder: 'Расскажите об академических интересах или достижениях',
     submitApplication: 'Отправить Заявку',
@@ -808,7 +818,7 @@ export const translations = {
     workingHours: 'Рабочие Часы',
     weekdays: 'Понедельник - Пятница',
     hours: '8:00 - 16:00',
-    copyright: '© 2024 Ar-Roshidoniy. Все права защищены.',
+    copyright: '© 2026 Ar-Roshidoniy. Все права защищены.',
 
     // Login Page
     welcomeBack: 'Добро Пожаловать',
@@ -1030,6 +1040,11 @@ export const translations = {
     tt_sat: 'Сб',
     tt_sun: 'Вс',
     tt_outdoor: 'На улице',
+    tt_copyToNextWeek: 'Копировать на следующую неделю',
+    tt_copying: 'Копирование...',
+    tt_copyReplaceTitle: 'Заменить следующую неделю?',
+    tt_copyReplaceDesc: 'На следующей неделе уже есть {count} записей. Они будут удалены и заменены расписанием этой недели. Продолжить?',
+    tt_copyReplace: 'Да, заменить',
 
     // Assessments
     asm_loading: 'Загрузка оценок...',

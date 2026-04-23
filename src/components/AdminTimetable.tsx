@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useLanguage } from '../context/LanguageContext';
 import { translations } from '../lib/i18n';
-import { GripVertical, X, Edit2, Trash2, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { GripVertical, X, Edit2, Trash2, ChevronLeft, ChevronRight, Plus, Copy } from 'lucide-react';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const ROOMS = ['101', '102', '103', '201', '202', '203', 'B1', 'B2', 'Outdoor'];
@@ -273,6 +273,62 @@ export default function AdminTimetable() {
     setEditingEntry(null);
   }
 
+  // ── Copy to next week ───────────────────────────────────────────────────────
+  const [isCopying, setIsCopying] = useState(false);
+  const [showCopyConfirm, setShowCopyConfirm] = useState(false);
+  const [copyConflictCount, setCopyConflictCount] = useState(0);
+
+  const nextWeekStartStr = React.useMemo(() => {
+    const next = new Date(monday);
+    next.setDate(next.getDate() + 7);
+    return next.toISOString().split('T')[0];
+  }, [monday]);
+
+  async function handleCopyToNextWeek() {
+    if (entries.length === 0 || isCopying) return;
+    setIsCopying(true);
+    try {
+      const { count, error } = await supabase
+        .from('timetable')
+        .select('id', { count: 'exact', head: true })
+        .eq('week_start', nextWeekStartStr);
+      if (error) throw error;
+      if (count && count > 0) {
+        setCopyConflictCount(count);
+        setShowCopyConfirm(true);
+        setIsCopying(false);
+        return;
+      }
+      await executeCopyToNextWeek();
+    } catch (err) {
+      console.error('Copy check failed:', err);
+      setIsCopying(false);
+    }
+  }
+
+  async function executeCopyToNextWeek() {
+    setIsCopying(true);
+    try {
+      // Delete any existing next-week entries first (handles the overwrite path)
+      await supabase.from('timetable').delete().eq('week_start', nextWeekStartStr);
+      // Batch-insert copies with next week's week_start
+      const rows = entries.map(e => ({
+        day_of_week: e.day_of_week,
+        time_slot: slotToDbTime(e.time_slot),
+        room: e.room,
+        group_ids: [e.group_id],
+        week_start: nextWeekStartStr,
+      }));
+      const { error } = await supabase.from('timetable').insert(rows);
+      if (error) throw error;
+    } catch (err) {
+      console.error('Copy failed:', err);
+    } finally {
+      setIsCopying(false);
+      setShowCopyConfirm(false);
+    }
+  }
+
   // ─────────────────────────────────────────────────────────────────────────────
   const paletteReady = selectedGroup && selectedRoom;
 
@@ -368,6 +424,25 @@ export default function AdminTimetable() {
               <span>{t('tt_selectGroupRoomFirst')}</span>
             </div>
           )}
+
+          {/* Copy to Next Week — pushed to the far right */}
+          <div className="ml-auto">
+            <button
+              onClick={handleCopyToNextWeek}
+              disabled={isCopying || entries.length === 0}
+              title={t('tt_copyToNextWeek')}
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
+            >
+              {isCopying ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <Copy className="w-4 h-4" />
+              )}
+              <span className="hidden sm:inline">
+                {isCopying ? t('tt_copying') : t('tt_copyToNextWeek')}
+              </span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -515,6 +590,38 @@ export default function AdminTimetable() {
                 className="flex-1 px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors"
               >
                 {t('tt_save')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Copy Confirm Modal ───────────────────────────────────────────────── */}
+      {showCopyConfirm && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowCopyConfirm(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-900">{t('tt_copyReplaceTitle')}</h3>
+              <button onClick={() => setShowCopyConfirm(false)} className="p-1 text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-sm text-gray-600 mb-6">
+              {t('tt_copyReplaceDesc').replace('{count}', String(copyConflictCount))}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowCopyConfirm(false)}
+                className="flex-1 px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                {t('tt_cancel')}
+              </button>
+              <button
+                onClick={executeCopyToNextWeek}
+                disabled={isCopying}
+                className="flex-1 px-4 py-2 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+              >
+                {isCopying ? t('tt_copying') : t('tt_copyReplace')}
               </button>
             </div>
           </div>
