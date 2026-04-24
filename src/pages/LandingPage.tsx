@@ -1,5 +1,6 @@
 import Hero from '../components/Hero';
 import Achievements from '../components/Achievements';
+import StudentAchievements from '../components/StudentAchievements';
 import Subjects from '../components/Subjects';
 import ApplicationForm from '../components/ApplicationForm';
 import Footer from '../components/Footer';
@@ -12,6 +13,7 @@ export default function LandingPage() {
       <Header />
       <Hero />
       <Achievements />
+      <StudentAchievements />
       <Subjects />
       <ApplicationForm />
       <Footer />

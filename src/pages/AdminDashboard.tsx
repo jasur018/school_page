@@ -142,6 +142,7 @@ export default function AdminDashboard() {
           <span className="font-bold text-gray-900 text-lg">{t('adminPanelTitle')}</span>
         </div>
         <div className="flex items-center gap-3">
+          <LanguageSwitcher theme="light" />
           <button onClick={handleOpenNotifications} className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors relative">
             <Bell className="w-5 h-5" />
             {unreadCount > 0 && <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}

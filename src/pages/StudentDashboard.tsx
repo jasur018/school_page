@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { LogOut, MessageSquare, Settings, Users, AlertCircle, User, CalendarDays, Award } from 'lucide-react';
+import { LogOut, MessageSquare, Settings, AlertCircle, User, CalendarDays, Award, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { supabase } from '../lib/supabase';
@@ -63,6 +63,7 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(true);
   const [dataLoading, setDataLoading] = useState(false);
   const [authDisplayName, setAuthDisplayName] = useState('');
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -193,9 +194,7 @@ export default function StudentDashboard() {
           
           {/* Left Side: Student Selector */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-100 text-blue-700 rounded-xl flex items-center justify-center shrink-0">
-              <Users className="w-5 h-5" />
-            </div>
+
             {students.length > 0 ? (
               <select
                 value={selectedStudentId}
@@ -215,11 +214,6 @@ export default function StudentDashboard() {
 
           {/* Right Side: Actions */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {authDisplayName && (
-              <span className="text-sm font-bold text-gray-700 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100 shadow-sm max-w-[100px] sm:max-w-[200px] truncate" title={authDisplayName}>
-                {authDisplayName}
-              </span>
-            )}
             <LanguageSwitcher theme="light" />
             <button 
               onClick={() => navigate('/messages')}
@@ -227,16 +221,51 @@ export default function StudentDashboard() {
             >
               <MessageSquare size={18} />
             </button>
-            <button className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors" title={t('settings')}>
-              <Settings className="w-5 h-5 sm:w-6 sm:h-6" />
-            </button>
-            <button 
-              onClick={handleLogout}
-              className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors" 
-              title={t('logout')}
-            >
-              <LogOut className="w-5 h-5 sm:w-6 sm:h-6" />
-            </button>
+
+            {authDisplayName && (
+              <div className="relative">
+                <button 
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className="flex items-center gap-2 text-sm font-bold text-gray-700 bg-gray-50 pl-2 pr-3 py-1.5 rounded-full border border-gray-100 shadow-sm hover:bg-white hover:border-blue-200 hover:shadow-md transition-all outline-none group"
+                >
+                  <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-black shadow-sm group-hover:scale-110 transition-transform">
+                    {authDisplayName.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="max-w-[100px] sm:max-w-[150px] truncate">{authDisplayName}</span>
+                  <ChevronDown className={`w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-all ${showProfileMenu ? 'rotate-180' : ''}`} />
+                </button>
+
+                {showProfileMenu && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-40 bg-transparent" 
+                      onClick={() => setShowProfileMenu(false)} 
+                    />
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                      <div className="p-2">
+                        <button 
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all"
+                          onClick={() => setShowProfileMenu(false)}
+                        >
+                          <Settings className="w-4 h-4" />
+                          {t('settings')}
+                        </button>
+                        <button 
+                          onClick={() => {
+                            setShowProfileMenu(false);
+                            handleLogout();
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          {t('logout')}
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
         </div>

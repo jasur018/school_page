@@ -3,12 +3,11 @@ import { supabase } from '../lib/supabase';
 import { useLanguage } from '../context/LanguageContext';
 import { 
   X, 
-  ChevronLeft, 
-  ChevronRight, 
   Megaphone, 
   Tag, 
   Clock,
-  ArrowRight
+  ArrowRight,
+  Info
 } from 'lucide-react';
 
 interface Announcement {
@@ -25,6 +24,7 @@ export default function AnnouncementDisplay() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
+  const [showMobileContent, setShowMobileContent] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -61,7 +61,6 @@ export default function AnnouncementDisplay() {
   };
 
   const nextAnn = () => setCurrentIndex((prev) => (prev + 1) % announcements.length);
-  const prevAnn = () => setCurrentIndex((prev) => (prev - 1 + announcements.length) % announcements.length);
 
   if (!isVisible || announcements.length === 0) return null;
 
@@ -74,15 +73,6 @@ export default function AnnouncementDisplay() {
       onMouseLeave={() => setIsPaused(false)}
     >
       <div className="pointer-events-auto relative px-4 pb-4 md:px-0 md:pb-0">
-        
-        {/* Mobile Close Button (Keep outside or as is) */}
-        <button 
-          onClick={() => setIsVisible(false)}
-          className="md:hidden absolute -top-2 -right-2 z-10 bg-white text-gray-400 hover:text-gray-900 shadow-lg border border-gray-100 rounded-full p-1.5 transition-all"
-        >
-          <X className="w-4 h-4" />
-        </button>
-
         {/* Desktop Container */}
         <div className="hidden md:block overflow-hidden shadow-2xl transition-all duration-500 animate-in slide-in-from-left-8 scale-90 origin-bottom-left">
            <div className="relative">
@@ -95,23 +85,14 @@ export default function AnnouncementDisplay() {
                 <X className="w-4 h-4" />
               </button>
               {/* Navigation Arrows */}
-              {announcements.length > 1 && (
-                <div className="absolute inset-y-0 -left-4 -right-4 flex items-center justify-between pointer-events-none">
-                  <button onClick={prevAnn} className="pointer-events-auto bg-white/90 backdrop-blur-sm shadow-md border border-gray-100 p-2 rounded-full text-gray-600 hover:text-blue-600 transition-all">
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button onClick={nextAnn} className="pointer-events-auto bg-white/90 backdrop-blur-sm shadow-md border border-gray-100 p-2 rounded-full text-gray-600 hover:text-blue-600 transition-all">
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
+
 
               {/* Unique Designs for Desktop */}
               {current.type === 'admission' && (
-                <div className="bg-emerald-600 text-white p-6 [clip-path:polygon(0%_0%,_100%_0%,_100%_85%,_85%_100%,_0%_100%)] shadow-lg border-b-4 border-emerald-800">
+                <div className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 text-white p-6 rounded-3xl shadow-xl shadow-emerald-900/20 border-b-4 border-emerald-800 ring-1 ring-inset ring-white/20 hover:scale-[1.02] transition-transform duration-300">
                   <div className="flex items-center gap-2 mb-3">
                     <Clock className="w-5 h-5 text-emerald-200" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-100">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-100/80">
                       {t('ann_typeAdmission')}
                     </span>
                   </div>
@@ -134,10 +115,10 @@ export default function AnnouncementDisplay() {
               )}
 
               {current.type === 'discount' && (
-                <div className="bg-rose-500 text-white p-6 relative [clip-path:polygon(10%_0%,_90%_0%,_100%_10%,_100%_90%,_90%_100%,_10%_100%,_0%_90%,_0%_10%)] shadow-lg border-2 border-dashed border-rose-300">
+                <div className="bg-gradient-to-br from-rose-500 via-rose-600 to-orange-600 text-white p-6 relative rounded-3xl shadow-xl shadow-rose-900/20 border-2 border-dashed border-rose-300/50 ring-1 ring-inset ring-white/20 hover:scale-[1.02] transition-transform duration-300">
                    <div className="flex items-center gap-2 mb-3">
                     <Tag className="w-5 h-5 text-rose-200" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-rose-100">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-rose-100/80">
                       {t('ann_typeDiscount')}
                     </span>
                   </div>
@@ -160,15 +141,15 @@ export default function AnnouncementDisplay() {
               )}
 
               {current.type === 'generic' && (
-                <div className="bg-white rounded-3xl p-5 shadow-lg border-2 border-blue-50">
+                <div className="bg-gradient-to-br from-white to-blue-50 rounded-3xl p-5 shadow-xl shadow-blue-900/5 border-2 border-blue-100/50 hover:scale-[1.02] transition-transform duration-300">
                   {current.image_url && (
-                    <div className="aspect-video mb-4 rounded-2xl overflow-hidden shadow-inner">
+                    <div className="aspect-video mb-4 rounded-2xl overflow-hidden shadow-inner border border-blue-100/30">
                       <img src={current.image_url} alt="" className="w-full h-full object-cover" />
                     </div>
                   )}
                   <div className="flex items-center gap-2 mb-2">
                     <Megaphone className="w-4 h-4 text-blue-600" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600/60">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600/40">
                       {t('ann_typeGeneric')}
                     </span>
                   </div>
@@ -197,25 +178,59 @@ export default function AnnouncementDisplay() {
                 className="min-w-full snap-center"
               >
                 {/* Mobile specific horizontal designs */}
-                <div className={`p-5 rounded-2xl shadow-xl flex items-center justify-between gap-4 border-2
-                  ${ann.type === 'admission' ? 'bg-emerald-600 border-emerald-500 text-white' :
-                    ann.type === 'discount' ? 'bg-rose-500 border-rose-400 text-white' :
-                    'bg-white border-blue-100 text-gray-900'}
+                <div className={`p-4 rounded-3xl shadow-2xl flex items-start justify-between gap-4 border-2 ring-1 ring-inset ring-white/10
+                  ${ann.type === 'admission' ? 'bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 border-emerald-400 text-white shadow-emerald-900/20' :
+                    ann.type === 'discount' ? 'bg-gradient-to-br from-rose-500 via-rose-600 to-orange-600 border-rose-400 text-white shadow-rose-900/20' :
+                    'bg-gradient-to-br from-white to-blue-50 border-blue-100 text-gray-900 shadow-blue-900/5'}
                 `}>
-                  <div className="flex-1 min-w-0">
+                  {/* Mobile Close Button - Now in flow and aligned */}
+                  <button 
+                    onClick={() => setIsVisible(false)}
+                    className="shrink-0 p-1 text-gray-400 hover:text-gray-900 mt-0.5"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+
+                  <div className="flex-1 min-w-0 pt-0.5">
                     <span className="text-[9px] font-black uppercase tracking-widest opacity-70 mb-1 block">
                       {ann.type === 'admission' ? t('ann_typeAdmission') : 
                        ann.type === 'discount' ? t('ann_typeDiscount') : 
                        t('ann_typeGeneric')}
                     </span>
-                    <h4 className="font-black text-sm truncate">{ann.title}</h4>
+                    
+                    {!showMobileContent ? (
+                      <h4 className="font-black text-sm truncate">{ann.title}</h4>
+                    ) : (
+                      <div className="space-y-1 animate-in fade-in slide-in-from-bottom-1 duration-300">
+                        {ann.type === 'admission' && ann.content.groups?.slice(0, 2).map((g: any, i: number) => (
+                          <div key={i} className="flex items-center justify-between text-[10px] font-medium opacity-90">
+                            <span className="truncate mr-2">{g.name}</span>
+                            <span className="shrink-0">{g.time}</span>
+                          </div>
+                        ))}
+                        {ann.type === 'discount' && ann.content.discounts?.slice(0, 2).map((d: any, i: number) => (
+                          <div key={i} className="flex items-center justify-between text-[10px] font-medium opacity-90">
+                            <span className="truncate mr-2">{d.course}</span>
+                            <span className="font-bold">-{d.amount}</span>
+                          </div>
+                        ))}
+                        {ann.type === 'generic' && (
+                          <p className="text-[10px] font-medium line-clamp-2 opacity-90">{ann.title}</p>
+                        )}
+                        {(ann.type === 'admission' && (!ann.content.groups || ann.content.groups.length === 0)) ||
+                         (ann.type === 'discount' && (!ann.content.discounts || ann.content.discounts.length === 0)) ? (
+                          <p className="text-[10px] opacity-70 italic">No details available</p>
+                        ) : null}
+                      </div>
+                    )}
                   </div>
+
                   <div className="shrink-0 flex flex-col items-end gap-2">
                     <button 
-                      onClick={nextAnn}
-                      className={`p-2 rounded-full transition-all ${ann.type === 'generic' ? 'bg-blue-50 text-blue-600' : 'bg-white/20 text-white hover:bg-white/30'}`}
+                      onClick={() => setShowMobileContent(!showMobileContent)}
+                      className={`p-2 rounded-full transition-all ${ann.type === 'generic' ? 'bg-blue-50 text-blue-600' : 'bg-white/20 text-white hover:bg-white/30'} ${showMobileContent ? 'ring-2 ring-white/50' : ''}`}
                     >
-                      <ArrowRight className="w-4 h-4" />
+                      <Info className="w-4 h-4" />
                     </button>
                     {announcements.length > 1 && (
                       <span className="text-[8px] font-bold uppercase tracking-widest opacity-50">
