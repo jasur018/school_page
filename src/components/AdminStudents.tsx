@@ -13,7 +13,6 @@ import {
   Archive,
   RefreshCw,
   MoreVertical,
-  Star,
   UserPlus,
   X
 } from 'lucide-react';
@@ -437,14 +436,112 @@ function NewStudentDialog({
   const { language } = useLanguage();
   const t = (key: keyof typeof translations.en) => translations[language][key];
 
+  const [applicants, setApplicants] = useState<any[]>([]);
+  const [showApplicants, setShowApplicants] = useState(false);
+  const [searchApplicantTerm, setSearchApplicantTerm] = useState('');
+  const [loadingApplicants, setLoadingApplicants] = useState(false);
+
+  useEffect(() => {
+    const fetchApplicants = async () => {
+      setLoadingApplicants(true);
+      try {
+        const { data, error } = await supabase
+          .from('applications')
+          .select('*')
+          .eq('reviewed', true);
+        if (error) throw error;
+        setApplicants(data || []);
+      } catch (err) {
+        console.error('Error fetching applicants:', err);
+      } finally {
+        setLoadingApplicants(false);
+      }
+    };
+    if (showApplicants && applicants.length === 0) {
+      fetchApplicants();
+    }
+  }, [showApplicants]);
+
+  const handleSelectApplicant = (app: any) => {
+    const nameParts = app.student_name.trim().split(' ');
+    const first_name = nameParts[0] || '';
+    const last_name = nameParts.slice(1).join(' ') || '';
+    
+    setData({
+      ...data,
+      first_name,
+      last_name,
+      guardian_full_name: app.parent_name || '',
+      guardian_phone: app.phone || '',
+      grade: app.grade_level || '9',
+    });
+    setShowApplicants(false);
+  };
+
+  const filteredApplicants = applicants.filter(a => 
+    a.student_name.toLowerCase().includes(searchApplicantTerm.toLowerCase()) || 
+    a.parent_name.toLowerCase().includes(searchApplicantTerm.toLowerCase())
+  );
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={onClose}></div>
       <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200">
         <form onSubmit={onSubmit} className="p-6 sm:p-8 overflow-y-auto max-h-[90vh]">
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center mb-6 relative">
             <h3 className="text-xl font-bold text-gray-900">{t('std_registerNewStudent')}</h3>
-            <button type="button" onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400"><X className="w-5 h-5" /></button>
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <button 
+                  type="button" 
+                  onClick={() => setShowApplicants(!showApplicants)}
+                  className="px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-sm font-bold transition-colors flex items-center gap-2"
+                >
+                  <Search className="w-4 h-4" />
+                  <span className="hidden sm:inline">{t('std_lookInApplicants')}</span>
+                </button>
+                {showApplicants && (
+                  <div className="absolute right-0 top-full mt-2 w-[calc(100vw-3rem)] sm:w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden">
+                    <div className="p-3 border-b border-gray-100 bg-gray-50">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input 
+                          type="text" 
+                          placeholder={t('std_searchApplicants') as string} 
+                          value={searchApplicantTerm}
+                          onChange={(e) => setSearchApplicantTerm(e.target.value)}
+                          className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+                    <div className="max-h-64 overflow-y-auto bg-white">
+                      {loadingApplicants ? (
+                        <div className="p-6 text-center text-gray-500 text-sm font-medium">Loading...</div>
+                      ) : filteredApplicants.length === 0 ? (
+                        <div className="p-6 text-center text-gray-500 text-sm font-medium">{t('std_noApplicants')}</div>
+                      ) : (
+                        <div className="divide-y divide-gray-50">
+                          {filteredApplicants.map(app => (
+                            <div 
+                              key={app.id} 
+                              onClick={() => handleSelectApplicant(app)}
+                              className="p-4 hover:bg-blue-50 cursor-pointer transition-colors group"
+                            >
+                              <div className="font-bold text-sm text-gray-900 group-hover:text-blue-700 transition-colors">{app.student_name}</div>
+                              <div className="flex justify-between items-center mt-1">
+                                <span className="text-xs text-gray-500 flex items-center gap-1"><User className="w-3 h-3" /> {app.parent_name}</span>
+                                <span className="text-[10px] font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-md uppercase tracking-wider">Grade {app.grade_level}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <button type="button" onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 transition-colors"><X className="w-5 h-5" /></button>
+            </div>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">

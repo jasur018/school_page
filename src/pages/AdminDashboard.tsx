@@ -6,6 +6,7 @@ import AdminGroups from '../components/AdminGroups';
 import AdminAssessments from '../components/AdminAssessments';
 import AdminMessages from '../components/AdminMessages';
 import AdminManageAccounts from '../components/AdminManageAccounts';
+import AdminAnnouncements from '../components/AdminAnnouncements';
 import { 
   LogOut, 
   Bell, 
@@ -21,14 +22,15 @@ import {
   ChevronDown,
   ChevronUp,
   X,
-  Mail
+  Mail,
+  Megaphone
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import { useLanguage } from '../context/LanguageContext';
 
-type TabType = 'timetable' | 'applications' | 'students' | 'manage_groups' | 'publish_assessments' | 'message' | 'manage_accounts';
+type TabType = 'timetable' | 'applications' | 'students' | 'manage_groups' | 'publish_assessments' | 'message' | 'manage_accounts' | 'announcements';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -122,6 +124,7 @@ export default function AdminDashboard() {
     { id: 'publish_assessments', icon: <Send className="w-5 h-5" />, label: t('adminMenuAssessments') as string },
     { id: 'message', icon: <MessageSquare className="w-5 h-5" />, label: t('adminMenuMessage') as string },
     { id: 'manage_accounts', icon: <Shield className="w-5 h-5" />, label: t('adminMenuAccounts') as string },
+    { id: 'announcements', icon: <Megaphone className="w-5 h-5" />, label: t('adminMenuAnnouncements') as string },
   ];
 
   return (
@@ -340,6 +343,8 @@ export default function AdminDashboard() {
               {activeTab === 'message' && <AdminMessages />}
 
               {activeTab === 'manage_accounts' && <AdminManageAccounts />}
+
+              {activeTab === 'announcements' && <AdminAnnouncements />}
 
             </div>
           </div>

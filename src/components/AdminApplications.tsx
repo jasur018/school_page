@@ -25,7 +25,6 @@ interface Application {
   phone: string;
   grade_level: string;
   message: string | null;
-  status: string;
   reviewed: boolean;
 }
 
@@ -68,7 +67,7 @@ export default function AdminApplications() {
     try {
       const { error } = await supabase
         .from('applications')
-        .update({ reviewed: true, status: 'accepted' }) // Default to accepted when reviewed for now, or just update reviewed
+        .update({ reviewed: true })
         .eq('id', id);
 
       if (error) throw error;

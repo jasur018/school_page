@@ -4,6 +4,7 @@ import Subjects from '../components/Subjects';
 import ApplicationForm from '../components/ApplicationForm';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
+import AnnouncementDisplay from '../components/AnnouncementDisplay';
 
 export default function LandingPage() {
   return (
@@ -14,6 +15,7 @@ export default function LandingPage() {
       <Subjects />
       <ApplicationForm />
       <Footer />
+      <AnnouncementDisplay />
     </div>
   );
 }

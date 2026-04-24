@@ -40,6 +40,11 @@ interface AssessmentEntry {
   maximum_mark: number;
   student_mark: number;
   group_name: string;
+  leaderboard?: {
+    student_id: string;
+    student_name: string;
+    mark: number;
+  }[];
 }
 
 
@@ -491,39 +496,87 @@ export default function StudentDashboard() {
                         const percentage = Math.round((assessment.student_mark / assessment.maximum_mark) * 100);
                         
                         return (
-                          <div key={assessment.id} className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row gap-6 sm:items-center justify-between transition-all hover:border-blue-200">
-                            <div className="flex items-start gap-5">
-                              {/* Big Grade Circle */}
-                              <div className={`w-16 h-16 rounded-full shrink-0 flex flex-col items-center justify-center border-4 ${
-                                percentage >= 80 ? 'border-emerald-100 bg-emerald-50 text-emerald-700' :
-                                percentage >= 50 ? 'border-amber-100 bg-amber-50 text-amber-700' :
-                                'border-rose-100 bg-rose-50 text-rose-700'
-                              }`}>
-                                <span className="text-lg font-bold leading-none">{assessment.student_mark}</span>
-                                <span className="text-[10px] font-bold opacity-70 uppercase tracking-widest mt-0.5">/ {assessment.maximum_mark}</span>
+                          <div key={assessment.id} className="bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col overflow-hidden transition-all hover:border-blue-200">
+                            <div className="p-5 sm:p-6 flex flex-col sm:flex-row gap-6 sm:items-center justify-between">
+                              <div className="flex items-start gap-5">
+                                {/* Big Grade Circle */}
+                                <div className={`w-16 h-16 rounded-full shrink-0 flex flex-col items-center justify-center border-4 ${
+                                  percentage >= 80 ? 'border-emerald-100 bg-emerald-50 text-emerald-700' :
+                                  percentage >= 50 ? 'border-amber-100 bg-amber-50 text-amber-700' :
+                                  'border-rose-100 bg-rose-50 text-rose-700'
+                                }`}>
+                                  <span className="text-lg font-bold leading-none">{assessment.student_mark}</span>
+                                  <span className="text-[10px] font-bold opacity-70 uppercase tracking-widest mt-0.5">/ {assessment.maximum_mark}</span>
+                                </div>
+
+                                <div className="flex flex-col justify-center">
+                                  <h4 className="font-bold text-gray-900 text-lg">{assessment.group_name}</h4>
+                                  <span className="text-sm text-gray-500 font-medium mt-0.5">{formatDate(assessment.created_at)}</span>
+                                  {assessment.comment && (
+                                    <p className="text-sm text-gray-600 mt-3 pt-3 border-t border-gray-100 italic leading-relaxed">
+                                      "{assessment.comment}"
+                                    </p>
+                                  )}
+                                </div>
                               </div>
 
-                              <div className="flex flex-col justify-center">
-                                <h4 className="font-bold text-gray-900 text-lg">{assessment.group_name}</h4>
-                                <span className="text-sm text-gray-500 font-medium mt-0.5">{formatDate(assessment.created_at)}</span>
-                                {assessment.comment && (
-                                  <p className="text-sm text-gray-600 mt-3 pt-3 border-t border-gray-100 italic leading-relaxed">
-                                    "{assessment.comment}"
-                                  </p>
-                                )}
+                              <div className="flex flex-col items-end shrink-0 sm:border-l sm:border-gray-100 sm:pl-6">
+                                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Total Percentage</span>
+                                <span className={`text-2xl font-black ${
+                                  percentage >= 80 ? 'text-emerald-600' :
+                                  percentage >= 50 ? 'text-amber-600' :
+                                  'text-rose-600'
+                                }`}>
+                                  {percentage}%
+                                </span>
                               </div>
                             </div>
 
-                            <div className="flex flex-col items-end shrink-0 sm:border-l sm:border-gray-100 sm:pl-6">
-                              <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Total Percentage</span>
-                              <span className={`text-2xl font-black ${
-                                percentage >= 80 ? 'text-emerald-600' :
-                                percentage >= 50 ? 'text-amber-600' :
-                                'text-rose-600'
-                              }`}>
-                                {percentage}%
-                              </span>
-                            </div>
+                            {/* Leaderboard Section */}
+                            {assessment.leaderboard && assessment.leaderboard.length > 0 && (
+                              <div className="bg-gray-50/80 border-t border-gray-100 px-5 sm:px-6 py-5">
+                                <h5 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                  Class Rating 
+                                  <span className="bg-white border border-gray-200 text-gray-500 py-0.5 px-2 rounded-full text-[10px]">{assessment.leaderboard.length} Students</span>
+                                </h5>
+                                <div className="flex flex-col gap-2">
+                                  {assessment.leaderboard.map((lb, index) => {
+                                    const isCurrentStudent = lb.student_id === selectedStudentId;
+                                    return (
+                                      <div 
+                                        key={lb.student_id} 
+                                        className={`flex items-center justify-between p-3 rounded-xl text-sm transition-all ${
+                                          isCurrentStudent 
+                                            ? 'bg-blue-50 border border-blue-200 ring-1 ring-blue-100 shadow-sm' 
+                                            : 'bg-white border border-gray-100 shadow-sm hover:border-gray-200'
+                                        }`}
+                                      >
+                                        <div className="flex items-center gap-3">
+                                          <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shadow-sm ${
+                                            index === 0 ? 'bg-gradient-to-br from-amber-200 to-amber-400 text-amber-900 border border-amber-300' :
+                                            index === 1 ? 'bg-gradient-to-br from-slate-200 to-slate-300 text-slate-800 border border-slate-300' :
+                                            index === 2 ? 'bg-gradient-to-br from-orange-200 to-orange-300 text-orange-900 border border-orange-300' :
+                                            'bg-gray-100 text-gray-600 border border-gray-200'
+                                          }`}>
+                                            {index + 1}
+                                          </div>
+                                          <span className={`font-medium flex items-center flex-wrap gap-2 ${isCurrentStudent ? 'text-blue-900 font-bold' : 'text-gray-700'}`}>
+                                            {lb.student_name}
+                                            {isCurrentStudent && <span className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">You</span>}
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <span className={`font-bold text-base ${isCurrentStudent ? 'text-blue-700' : 'text-gray-900'}`}>
+                                            {lb.mark}
+                                          </span>
+                                          <span className="text-xs text-gray-400 font-medium">/ {assessment.maximum_mark}</span>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         );
                       })}
